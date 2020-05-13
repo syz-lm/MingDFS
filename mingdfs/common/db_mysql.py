@@ -22,20 +22,26 @@ class MySQLPool:
 
     def _init_pool(self):
         for i in range(self.size):
-            self.pool.append(self._get_conn())
+            conn = self._get_conn()
+            if conn is not None:
+                self.pool.append()
 
     def _get_conn(self):
-        connection = pymysql.connect(host=self.host,
-                                     user=self.user,
-                                     password=self.passwd,
-                                     db=self.db,
-                                     charset='utf8mb4',
-                                     write_timeout=60,
-                                     read_timeout=60,
-                                     connect_timeout=60,
-                                     # autocommit=True,
-                                     cursorclass=pymysql.cursors.DictCursor)
-        return connection
+        try:
+            connection = pymysql.connect(host=self.host,
+                                         user=self.user,
+                                         password=self.passwd,
+                                         db=self.db,
+                                         charset='utf8mb4',
+                                         write_timeout=60,
+                                         read_timeout=60,
+                                         connect_timeout=60,
+                                         # autocommit=True,
+                                         cursorclass=pymysql.cursors.DictCursor)
+            return connection
+        except:
+            MySQLPool._LOGGER.error(traceback.format_exc())
+            return None
 
     def get_conn(self):
         with MySQLPool._LOCK:
@@ -148,3 +154,8 @@ class MySQLPool:
         finally:
             if conn: self.back_conn(conn)
             return affect_rows
+
+
+class MySQLBase(object):
+    def __init__(self, mysql_pool):
+        self.mysql_pool = mysql_pool

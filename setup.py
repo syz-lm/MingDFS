@@ -6,7 +6,7 @@ setup(
     url='',
     license='',
     maintainer='zswj123',
-    maintainer_email='l2se@sina.cn',
+    maintainer_email='congshi.hello@gmail.com',
     description='',
     long_description='',
     packages=find_packages(),
@@ -22,7 +22,7 @@ setup(
     ],
     entry_points = """
     [console_scripts]
-    fmws = mingdfs.fwms.apps:main
-    frws = mingdfs.frws.apps:main
+    fmws = mingdfs.fmws.apps:main
+    frws = mingdfs.frws.api:main
     """
 )
