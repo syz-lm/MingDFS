@@ -1,4 +1,4 @@
-from mingdfs.common.db_mysql import MySQLBase
+from mingdfs.db_mysql import MySQLBase
 
 
 class Plat(MySQLBase):

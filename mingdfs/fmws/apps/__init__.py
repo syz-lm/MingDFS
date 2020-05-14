@@ -10,7 +10,7 @@ from flask import Flask
 from flask_session import Session
 from redis import StrictRedis
 
-from mingdfs.common.db_mysql import MySQLPool
+from mingdfs.db_mysql import MySQLPool
 # 静态文件和模板
 from mingdfs.fmws.settings import TEMPLATES_FOLDER, STATIC_FOLDER
 
@@ -28,10 +28,10 @@ REDIS_CLI = StrictRedis(host=REDIS_CONFIG['host'],
                         socket_keepalive=True)
 
 MYSQL_POOL = MySQLPool(host=MYSQL_CONFIG['host'],
-                               user=MYSQL_CONFIG['user'],
-                               passwd=MYSQL_CONFIG['passwd'],
-                               db=MYSQL_CONFIG['db'],
-                               size=MYSQL_CONFIG['size'])
+                       user=MYSQL_CONFIG['user'],
+                       passwd=MYSQL_CONFIG['passwd'],
+                       db=MYSQL_CONFIG['db'],
+                       size=MYSQL_CONFIG['size'])
 
 # 设置FLASK
 APP = Flask(__name__, static_folder=STATIC_FOLDER,
@@ -68,7 +68,7 @@ def main():
     try:
         monkey.patch_all()
 
-        http_server = WSGIServer(('0.0.0.0', 8000), APP)
+        http_server = WSGIServer(('0.0.0.0', 15675), APP)
         http_server.serve_forever()
     except Exception as e:
         logging.error(e)
@@ -89,4 +89,4 @@ def main():
 
 
 if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=8000, debug=True)
+    APP.run(host='0.0.0.0', port=15675, debug=True)

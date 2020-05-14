@@ -25,7 +25,7 @@ def main():
     try:
         monkey.patch_all()
 
-        http_server = WSGIServer(('0.0.0.0', 8000), APP)
+        http_server = WSGIServer(('0.0.0.0', 15676), APP)
         http_server.serve_forever()
     except Exception as e:
         logging.error(e)
@@ -37,4 +37,4 @@ def main():
 
 
 if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=8000, debug=True)
+    APP.run(host='0.0.0.0', port=15676, debug=True)
