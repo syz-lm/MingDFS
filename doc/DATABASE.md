@@ -16,10 +16,11 @@ CREATE TABLE `file` (
   `file_type_id` int NOT NULL,
   `file_path` varchar(255) NOT NULL,
   `last_edit_time` int NOT NULL,
-  `plat_id` int NOT NULL,
+  `last_access_time` int NOT NULL,
   `user_id` int NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_file_name_index` (`file_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
 ```sql
@@ -28,25 +29,30 @@ CREATE TABLE `file_type` (
   `type_name` varchar(255) NOT NULL,
   `add_time` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
 ```sql
-CREATE TABLE `plat` (
+CREATE TABLE `payment_flow` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `plat_name` varchar(255) NOT NULL,
-  `plat_add_time` int NOT NULL,
-  `plat_web_site` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-```
-
-```sql
-CREATE TABLE `plat_user` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `md5_uid` varchar(255) NOT NULL,
-  `plat_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `money` int NOT NULL,
   `add_time` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+```sql
+CREATE TABLE `user` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `money` int NOT NULL COMMENT '余额',
+  `integral` int NOT NULL COMMENT '积分',
+  `api_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '商户使用api操作时不用登陆使用的标识',
+  `user_id` int NOT NULL COMMENT 'SYX用户id',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+```sql
+create unique index unique_file_name_index on file(file_name);
 ```
