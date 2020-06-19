@@ -51,12 +51,12 @@ APP.config.from_mapping(
 Session(APP)
 
 # 蓝图
-from mingdfs.fmws.apps.plat import PLAT_BP
 from mingdfs.fmws.apps.file import FILE_BP
+from mingdfs.fmws.apps.order import ORDER_BP
 
 # 注册蓝图
-APP.register_blueprint(PLAT_BP, url_prefix="/plat")
 APP.register_blueprint(FILE_BP, url_prefix="/file")
+APP.register_blueprint(ORDER_BP, url_prefix="/order")
 
 
 # 设置日志

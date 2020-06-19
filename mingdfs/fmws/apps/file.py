@@ -2,6 +2,13 @@ from flask import request, session, redirect, url_for, render_template, Blueprin
 
 FILE_BP = Blueprint('file_bp', __name__)
 
+@FILE_BP.route('/', methods=['GET'])
+@FILE_BP.route('/home', methods=['GET'])
+def home():
+    """
+
+    """
+    pass
 
 @FILE_BP.route('/upload', methods=['GET', 'POST'])
 def upload():
