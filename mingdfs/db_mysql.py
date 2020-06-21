@@ -24,7 +24,7 @@ class MySQLPool:
         for i in range(self.size):
             conn = self._get_conn()
             if conn is not None:
-                self.pool.append()
+                self.pool.append(conn)
 
     def _get_conn(self):
         try:

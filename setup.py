@@ -18,7 +18,9 @@ setup(
         "redis",
         "pillow",
         "PyMySQL",
-        "gevent"
+        "gevent",
+        "psutil",
+        "requests"
     ],
     entry_points = """
     [console_scripts]

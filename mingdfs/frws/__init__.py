@@ -6,11 +6,13 @@ import traceback
 
 from flask import Flask
 
+from mingdfs.frws.settings import PORT
+
 # 设置FLASK
 APP = Flask(__name__)
 
 # 蓝图
-from mingdfs.fmws.apps.file import FILE_BP
+from mingdfs.frws.api import FILE_BP
 
 # 注册蓝图
 APP.register_blueprint(FILE_BP, url_prefix="/file")
@@ -25,7 +27,7 @@ def main():
     try:
         monkey.patch_all()
 
-        http_server = WSGIServer(('0.0.0.0', 15676), APP)
+        http_server = WSGIServer(('0.0.0.0', PORT), APP)
         http_server.serve_forever()
     except Exception as e:
         logging.error(e)
@@ -37,4 +39,4 @@ def main():
 
 
 if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=15676, debug=True)
+    APP.run(host='0.0.0.0', port=PORT, debug=True)

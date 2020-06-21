@@ -4,7 +4,7 @@ import time
 from unittest import TestCase
 
 small_file = "small_video.mp4"
-big_file = "big_video.mp4"
+big_file = "/Volumes/GoodByeUbuntu/reborn/video/1584405236.4538555_Forrest.Gump.1994.BluRay.720p.AAC.x264-iSCG.mp4"
 test_api = 'http://localhost:9000'
 download_dir = './flask_test_download'
 

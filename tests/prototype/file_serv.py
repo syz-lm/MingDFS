@@ -1,7 +1,7 @@
 from flask import Flask, request, send_from_directory
 from os.path import sep
 
-save_path = './file_serv_save'
+save_path = 'file_serv_save'
 app = Flask(__name__)
 
 
