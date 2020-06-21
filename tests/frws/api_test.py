@@ -37,10 +37,27 @@ class Test(unittest.TestCase):
         print(r.url)
 
     def test_edit(self):
-        pass
+        form_data = {
+            "user_id": 'xxx',
+            "src_title": 'xxx',
+            "new_title": 'bbb',
+            "src_category_id": 'xxx',
+            "new_category_id": 'bbb',
+            "src_file_extension": 'mp4',
+            "new_file_extension": 'mp4'
+        }
+        go = '/edit'
+        r = requests.get(url + go, data=form_data)
+        print(r.json())
 
     def test_stat(self):
-        pass
+        go = '/stat'
+
+        r = requests.get(url + go)
+        print(r.json())
 
     def test_delete(self):
-        pass
+        form_data = {"user_id": 'xxx', "title": 'bbb', "category_id": 'bbb', "file_extension": 'mp4'}
+        go = '/delete'
+        r = requests.get(url + go, data=form_data)
+        print(r.json())
