@@ -40,6 +40,9 @@ def _read_command_line(flags):
     settings.HOST_NAME = flags.HOST_NAME
     settings.REGISTER_API = flags.REGISTER_API
     settings.SAVE_DIRS = flags.SAVE_DIRS
+
+    logging.debug('HOST: %s, PORT: %d, HOST_NAME: %s, REGISTER_API: %s, SAVE_DIRS: %s', settings.HOST,
+                  settings.PORT, settings.HOST_NAME, settings.REGISTER_API, settings.SAVE_DIRS)
     if len(settings.SAVE_DIRS) == 0:
         logging.error('存储磁盘不能为空')
         return
@@ -47,9 +50,9 @@ def _read_command_line(flags):
         for save_dir in settings.SAVE_DIRS:
             if not os.path.exists(save_dir):
                 os.makedirs(save_dir)  # mkdir -p
-    if 0 == register_frws(settings.HOST_NAME, settings.HOST, settings.PORT, settings.REGISTER_API):
-        logging.error('注册服务器失败')
-        return
+    # if 0 == register_frws(settings.HOST_NAME, settings.HOST, settings.PORT, settings.REGISTER_API):
+    #     logging.error('注册服务器失败')
+    #     return
     start_frws(settings.HOST, settings.PORT)
 
 

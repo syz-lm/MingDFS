@@ -1,5 +1,7 @@
 from gevent.pywsgi import WSGIServer
 from gevent import monkey
+monkey.patch_all()
+
 import logging
 import traceback
 from flask import Flask
@@ -32,8 +34,6 @@ def start_frws(host, port):
     """
     global APP
     try:
-        monkey.patch_all()
-
         http_server = WSGIServer((host, port), APP)
         http_server.serve_forever()
     except Exception as e:
@@ -65,6 +65,9 @@ def register_frws(host_name, host, port, register_api):
         "host": host,
         "port": port
     }
-    r = requests.get(register_api, data=form_data)
-    r.raise_for_status()
-    return r.json()['status']
+    try:
+        r = requests.get(register_api, data=form_data)
+        r.raise_for_status()
+        return r.json()['status']
+    except:
+        return 0

@@ -28,3 +28,8 @@ REDIS_CONFIG = {
 
 TEMPLATES_FOLDER = "./templates"
 STATIC_FOLDER = "./static"
+
+
+HOST_NAME = 'fmws0'
+HOST = '0.0.0.0'
+PORT = 15675

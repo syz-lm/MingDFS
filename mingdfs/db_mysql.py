@@ -157,5 +157,5 @@ class MySQLPool:
 
 
 class MySQLBase(object):
-    def __init__(self, mysql_pool):
-        self.mysql_pool = mysql_pool
+    def __init__(self, mysql_pool: MySQLPool):
+        self.mysql_pool: MySQLPool = mysql_pool

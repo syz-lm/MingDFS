@@ -52,23 +52,22 @@ Session(APP)
 
 # 蓝图
 from mingdfs.fmws.apps.file import FILE_BP
-from mingdfs.fmws.apps.order import ORDER_BP
-
+from mingdfs.fmws.apps.user import USER_BP
+#
 # 注册蓝图
 APP.register_blueprint(FILE_BP, url_prefix="/file")
-APP.register_blueprint(ORDER_BP, url_prefix="/order")
+APP.register_blueprint(USER_BP, url_prefix="/user")
 
 
 # 设置日志
 logging.basicConfig(level=logging.DEBUG)
 
 
-def main():
-    global APP
+def main(host, port):
     try:
         monkey.patch_all()
 
-        http_server = WSGIServer(('0.0.0.0', 15675), APP)
+        http_server = WSGIServer((host, port), APP)
         http_server.serve_forever()
     except Exception as e:
         logging.error(e)
@@ -88,5 +87,5 @@ def main():
             logging.error(traceback.format_exc())
 
 
-if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=15675, debug=True)
+def debug(host, port):
+    APP.run(host=host, port=port, debug=True)

@@ -4,7 +4,7 @@ import os
 import psutil
 from flask import request, Blueprint, send_from_directory
 
-from mingdfs.frws.settings import SAVE_DIRS
+from mingdfs.frws import settings
 
 FILE_BP = Blueprint('file_bp', __name__)
 
@@ -13,7 +13,7 @@ FILE_BP = Blueprint('file_bp', __name__)
 def upload():
     """上传文件
 
-    GET 请求form表单 {"user_id": xxx, "title": xxx, "category_id": xxx, "file_extension": xxx, "file_size": xxx}
+    GET 请求form表单 {"user_id": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx, "file_extension": xxx, "file_size": xxx}
         返回json 成功 {"data": [], "status": 1}
                 失败 {"data": [], "status": 0}
 
@@ -21,12 +21,13 @@ def upload():
     """
     if request.method == "GET":
         user_id = request.form['user_id']
+        third_user_id = request.form['third_user_id']
         title = request.form['title']
         category_id = request.form['category_id']
         file_extension = request.form['file_extension']
         file_size = int(request.form['file_size'])
 
-        save_file_name = str(user_id) + '_' + base64.standard_b64encode(title.encode()).decode() + \
+        save_file_name = str(user_id) + '_' + str(third_user_id) + '_' + base64.standard_b64encode(title.encode()).decode() + \
                          '_' + str(category_id)
         file = request.files['upload_file_name']
         upload_file_name = file.filename
@@ -40,7 +41,7 @@ def upload():
             return {"data": [], "status": 0}
 
         can_save_dirs = []
-        for save_dir in SAVE_DIRS:
+        for save_dir in settings.SAVE_DIRS:
             sdiskusage = psutil.disk_usage(save_dir)
 
             if sdiskusage.free >= file_size:
@@ -66,19 +67,20 @@ def upload():
 def download():
     """下载文件
 
-    GET 请求url参数 {"user_id": xxx, "title": xxx, "category_id": xxx, "file_extension": xxx}
+    GET 请求url参数 {"user_id": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx, "file_extension": xxx}
         返回 成功 二进制数据
             失败 json {"data": [], "status": 0}
     """
     if request.method == 'GET':
         user_id = request.args.get('user_id')
+        third_user_id = request.args.get("third_user_id")
         title = request.args.get('title')
         category_id = request.args.get("category_id")
         file_extension = request.args.get('file_extension')
-        file_name = str(user_id) + '_' + base64.standard_b64encode(title.encode()).decode() + \
+        file_name = str(user_id) + '_' + str(third_user_id) + '_' + base64.standard_b64encode(title.encode()).decode() + \
                     '_' + str(category_id) + "." + file_extension
 
-        for save_dir in SAVE_DIRS:
+        for save_dir in settings.SAVE_DIRS:
             file_path = save_dir + os.path.sep + file_name
             if os.path.exists(file_path):
                 return send_from_directory(save_dir, file_name)
@@ -92,6 +94,8 @@ def edit():
 
        GET 请求form表单 {
                         "user_id": xxx,
+                        "src_third_user_id": xxx,
+                        "new_third_user_id": xxx,
                         "src_title": xxx,
                         "new_title": xxx,
                         "src_category_id": xxx,
@@ -105,21 +109,23 @@ def edit():
     if request.method == "GET":
         user_id = request.form['user_id']
 
+        src_third_user_id = request.form['src_third_user_id']
         src_title = request.form['src_title']
         src_category_id = request.form['src_category_id']
         src_file_extension = request.form['src_file_extension']
         new_title = request.form['new_title']
         new_category_id = request.form['new_category_id']
         new_file_extension = request.form['new_file_extension']
+        new_third_user_id = request.form['new_third_user_id']
 
-        for save_dir in SAVE_DIRS:
-            src_save_file_name = save_dir + os.path.sep + str(user_id) + '_' + \
+        for save_dir in settings.SAVE_DIRS:
+            src_save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(src_third_user_id) + '_' + \
                                  base64.standard_b64encode(src_title.encode()).decode() + \
                                  '_' + str(src_category_id) + "." + src_file_extension
             if not os.path.exists(src_save_file_name):
                 continue
 
-            new_save_file_name = save_dir + os.path.sep + str(user_id) + '_' + \
+            new_save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(new_third_user_id) + '_' + \
                                  base64.standard_b64encode(new_title.encode()).decode() + \
                                  '_' + str(new_category_id) + "." + new_file_extension
 
@@ -140,18 +146,19 @@ def edit():
 def delete():
     """删除文件
 
-    GET 请求form表单 {"user_id": xxx, "title": xxx, "category_id": xxx, "file_extension": xxx}
+    GET 请求form表单 {"user_id": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx, "file_extension": xxx}
         返回json 成功 {"data": [], "status": 0}
                 失败 {"data": [], "status": 1}
     """
     if request.method == 'GET':
         user_id = request.form['user_id']
+        third_user_id = request.form['third_user_id']
         title = request.form['title']
         category_id = request.form['category_id']
         file_extension = request.form['file_extension']
 
-        for save_dir in SAVE_DIRS:
-            save_file_name = save_dir + os.path.sep + str(user_id) + '_' + base64.standard_b64encode(title.encode()).decode() + \
+        for save_dir in settings.SAVE_DIRS:
+            save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(third_user_id) + '_' + base64.standard_b64encode(title.encode()).decode() + \
                              '_' + str(category_id) + "." + file_extension
             if os.path.exists(save_file_name):
                 try:
@@ -188,7 +195,7 @@ def stat():
             used_cpu_percent = psutil.cpu_percent(interval=None, percpu=False)
 
             disk_free = {}
-            for save_dir in SAVE_DIRS:
+            for save_dir in settings.SAVE_DIRS:
                 sdiskusage = psutil.disk_usage(save_dir)
                 disk_free[save_dir] = sdiskusage.free
 

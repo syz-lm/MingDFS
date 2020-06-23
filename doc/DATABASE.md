@@ -9,50 +9,35 @@ create database mingdfs;
 ```
 
 ```sql
-CREATE TABLE `file` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `file_name` varchar(255) NOT NULL,
-  `file_size` int NOT NULL,
-  `file_type_id` int NOT NULL,
-  `file_path` varchar(255) NOT NULL,
-  `last_edit_time` int NOT NULL,
-  `last_access_time` int NOT NULL,
-  `user_id` int NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_file_name_index` (`file_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-```
-
-```sql
-CREATE TABLE `file_type` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `type_name` varchar(255) NOT NULL,
-  `add_time` int NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-```
-
-```sql
-CREATE TABLE `payment_flow` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `money` int NOT NULL,
-  `add_time` int NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-```
-
-```sql
 CREATE TABLE `user` (
   `id` int NOT NULL AUTO_INCREMENT,
   `money` int NOT NULL COMMENT '余额',
-  `integral` int NOT NULL COMMENT '积分',
-  `api_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '商户使用api操作时不用登陆使用的标识',
-  `user_id` int NOT NULL COMMENT 'SYX用户id',
+  `api_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '商户使用api操作时不用登陆使用的标识',
+  `user_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '用户名',
+  `register_time` int NOT NULL COMMENT '注册时间',
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '邮箱',
+  `passwd` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '密码',
+  `last_login_time` int NOT NULL COMMENT '最后登录时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-```
 
-```sql
-create unique index unique_file_name_index on file(file_name);
+CREATE TABLE `file` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `third_user_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
+  `category_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
+  `add_time` int NOT NULL,
+  `last_edit_time` int NOT NULL,
+  `last_access_time` int NOT NULL,
+  `file_size` int NOT NULL,
+  `file_extension` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE UNIQUE INDEX unique_user_name ON user(user_name);
+CREATE UNIQUE INDEX unique_email ON user(email);
+CREATE UNIQUE INDEX unique_api_key ON user(api_key);
+
+CREATE UNIQUE INDEX unique_uttc ON file(user_id, third_user_id, title, category_id);
 ```

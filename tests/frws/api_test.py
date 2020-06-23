@@ -16,6 +16,7 @@ class Test(unittest.TestCase):
         go = '/upload'
         form_data = {
             "user_id": 'xxx',
+            "third_user_id": "xxx",
             "title": 'xxx',
             "category_id": 'xxx',
             "file_extension": 'mp4',
@@ -29,7 +30,7 @@ class Test(unittest.TestCase):
 
     def test_download(self):
         go = '/download'
-        args = {"user_id": 'xxx', "title": 'xxx', "category_id": 'xxx', "file_extension": 'mp4'}
+        args = {"user_id": 'xxx', "third_user_id": "xxx", "title": 'xxx', "category_id": 'xxx', "file_extension": 'mp4'}
         r = requests.get(url + go, params=args)
         save_file = download_dir + os.path.sep + str(time.time()) + '.mp4'
         with open(save_file, 'wb') as f:
@@ -39,6 +40,8 @@ class Test(unittest.TestCase):
     def test_edit(self):
         form_data = {
             "user_id": 'xxx',
+            "src_third_user_id": "xxx",
+            "new_third_user_id": "bbb",
             "src_title": 'xxx',
             "new_title": 'bbb',
             "src_category_id": 'xxx',
@@ -57,7 +60,7 @@ class Test(unittest.TestCase):
         print(r.json())
 
     def test_delete(self):
-        form_data = {"user_id": 'xxx', "title": 'bbb', "category_id": 'bbb', "file_extension": 'mp4'}
+        form_data = {"user_id": 'xxx', "third_user_id": "bbb", "title": 'bbb', "category_id": 'bbb', "file_extension": 'mp4'}
         go = '/delete'
         r = requests.get(url + go, data=form_data)
         print(r.json())
