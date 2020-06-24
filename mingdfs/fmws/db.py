@@ -30,6 +30,15 @@ class User(MySQLBase):
         select money from user where user_name = 'xxx' and passwd = 'xxx'
         update user set money = 12312 where user_name = 'xxx' and passwd = 'xxx'
     """
+    def exists(self, user_name, email):
+        sql = "select id from user where user_name = %s or email = %s"
+        args = (user_name, email)
+        results = self.mysql_pool.query(sql, args)
+        if len(results) != 0:
+            return True
+        else:
+            return False
+
     def add_user(self, user_name, money, api_key, register_time, email, passwd, last_login_time):
         sql = ("insert into user(user_name, money, api_key, register_time, email, passwd, last_login_time)"
                "value(%s, %s, %s, %s, %s, %s, %s)")

@@ -57,6 +57,9 @@ def view_file():
         finally:
             r.close()
 
+@app.route('/eye_host')
+def eye_host():
+    return request.remote_addr
 
 if __name__ == '__main__':
     app.run(host='localhost', port=9000, debug=True)

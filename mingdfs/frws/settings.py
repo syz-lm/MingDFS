@@ -1,8 +1,13 @@
-HOST = 'localhost'
+HOST = '0.0.0.0'
+IP = '127.0.0.1'
 PORT = 15676
 HOST_NAME = 'frws0'
-REGISTER_API = 'http://fmws:15675/register_frws'
+FMWS_HOST_NAME = 'fmws0'
+FMWS_PORT = 15675
 
 SAVE_DIRS = [
     '/mnt/hgfs/mingdfs/frws'
 ]
+
+FMWS_KEY = 'mm5201314'
+FRWS_KEY = 'mm5201314'

@@ -26,10 +26,12 @@ REDIS_CONFIG = {
     "passwd": 'mm5201314'
 }
 
-TEMPLATES_FOLDER = "./templates"
-STATIC_FOLDER = "./static"
+TEMPLATES_FOLDER = "../templates"
+STATIC_FOLDER = "../static"
 
 
 HOST_NAME = 'fmws0'
 HOST = '0.0.0.0'
 PORT = 15675
+FMWS_KEY = 'mm5201314'
+FRWS_KEY = 'mm5201314'

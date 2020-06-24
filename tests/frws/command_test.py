@@ -8,7 +8,8 @@ class Test(unittest.TestCase):
         try:
             p = subprocess.Popen(["/usr/local/python3.8/bin/python3.8", command.__file__,
                                '--HOST', '0.0.0.0', '--PORT', '15676', '--HOST_NAME', 'frws0',
-                               '--REGISTER_API', 'http://localhost:15675/register_frws',
+                               '--FMWS_HOST_NAME', 'fmws0', '--FMWS_PORT', '15675',
+                               '--FMWS_KEY', 'mm5201314', '--FRWS_KEY', 'mm5201314',
                                '--SAVE_DIRS', '/mnt/hgfs/mingdfs/frws', '/mnt/hgfs/mingdfs/frws1'], stdout=subprocess.PIPE)
             p.wait(timeout=times)
             print(p.stdout.read())

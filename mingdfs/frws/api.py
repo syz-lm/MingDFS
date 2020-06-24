@@ -5,8 +5,23 @@ import psutil
 from flask import request, Blueprint, send_from_directory
 
 from mingdfs.frws import settings
+from mingdfs.frws import APP
 
 FILE_BP = Blueprint('file_bp', __name__)
+
+@APP.route('/hello', methods=['GET'])
+def hello():
+    """fmws发送校验
+    GET 请求form表单 {"frws_key": xxx}
+        返回json 成功 {"data": [], "status": 1}
+                失败 {"data": [], "status": 0}
+    """
+    if request.method == 'GET':
+        frws_key = request.form['frws_key']
+        if frws_key != settings.FRWS_KEY:
+            return {"data": [], "status": 0}
+        else:
+            return {"data": [], "status": 1}
 
 
 @FILE_BP.route('/upload', methods=['GET'])
@@ -105,7 +120,7 @@ def edit():
                         }
            返回json 成功 {"data": [], "status": 1}
                    失败 {"data": [], "status": 0}
-       """
+    """
     if request.method == "GET":
         user_id = request.form['user_id']
 

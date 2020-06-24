@@ -24,7 +24,7 @@ setup(
     ],
     entry_points = """
     [console_scripts]
-    fmws = mingdfs.fmws.apps:main
-    frws = mingdfs.frws.api:main
+    fmws = mingdfs.fmws.command:main
+    frws = mingdfs.frws.command:main
     """
 )

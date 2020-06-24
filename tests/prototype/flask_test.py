@@ -31,3 +31,7 @@ class Test(TestCase):
         save_file = download_dir + os.path.sep + str(time.time()) + '.mp4'
         with open(save_file, 'wb') as f:
             f.write(r.content)
+
+    def test_eye_host(self):
+        r = requests.get(test_api + '/eye_host')
+        print(r.text)
