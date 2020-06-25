@@ -10,6 +10,7 @@ usage: 欢迎使用fmws。 [-h] [--SECRET_KEY SECRET_KEY] [--MYSQL_CONFIG MYSQL_
                  [--MAIL_CONFIG MAIL_CONFIG] [--REDIS_CONFIG REDIS_CONFIG]
                  [--HOST_NAME HOST_NAME] [--HOST HOST] [--PORT PORT]
                  [--FMWS_KEY FMWS_KEY] [--FRWS_KEY FRWS_KEY]
+                 [--FMWS_CACHE FMWS_CACHE] [--STAT_INTERVAL STAT_INTERVAL]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -32,6 +33,10 @@ optional arguments:
   --PORT PORT           输入fmws服务端口：默认，15675
   --FMWS_KEY FMWS_KEY   输入fmws服务访问key：默认，mm5201314
   --FRWS_KEY FRWS_KEY   输入fmws服务端口：默认，mm5201314
+  --FMWS_CACHE FMWS_CACHE
+                        输入fmws缓冲区路径：默认，/mnt/hgfs/mingdfs/fmws_cache
+  --STAT_INTERVAL STAT_INTERVAL
+                        输入统计进程执行间隔：默认，300秒
 
 ```
 
@@ -61,6 +66,7 @@ optional arguments:
   --FRWS_KEY FRWS_KEY   输入fmws服务端口：默认，mm5201314
   --SAVE_DIRS SAVE_DIRS [SAVE_DIRS ...]
                         输入服务器存储路径列表：默认，[]
+
 ```
 
 文件资源服务器的配置和启动。

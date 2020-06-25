@@ -71,7 +71,7 @@ def upload():
             except:
                 logging.error(traceback.format_exc())
                 print('转存文件失败', url, method)
-                return {"data": [], "status": 0
+                return {"data": [], "status": 0}
             finally:
                 try:
                     if f: f.close()

@@ -46,7 +46,7 @@ class FileTest(TestCase):
                                   2, 1, 2, 'mp4', 'flv'))
 
 
-class Test(TestCase):
+class ReidsOPTest(TestCase):
     def test_best_frws(self):
         stat_infor = REDIS_CLI.get(settings.CACHE_FRWS_STAT_INFOR_KEY)
         print(stat_infor)

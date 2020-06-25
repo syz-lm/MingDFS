@@ -72,8 +72,6 @@ def _read_command_line(flags, debug):
 
     settings.FMWS_CACHE = flags.FMWS_CACHE
 
-
-
     if not os.path.exists(settings.FMWS_CACHE):
         os.makedirs(settings.FMWS_CACHE, exist_ok=True)
 
