@@ -111,9 +111,9 @@ def change_passwd():
             return {"data": [], "status": 0}
     elif request.method == 'GET':
         if pc_or_mobile(request.headers['User-Agent']) == PC:
-            return render_template('pc/change_passwd.html.html')
+            return render_template('pc/change_passwd.html')
         elif pc_or_mobile(request.headers['User-Agent']) == MOBILE:
-            return render_template('mobile/change_passwd.html.html')
+            return render_template('mobile/change_passwd.html')
         else:
             abort(403, '不支持的客户端')
 

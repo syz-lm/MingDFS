@@ -15,7 +15,8 @@ class Test(unittest.TestCase):
                                   '--HOST', '0.0.0.0',
                                   '--PORT', '15675',
                                   '--FMWS_KEY', 'mm5201314',
-                                  '--FRWS_KEY', 'mm5201314'], stdout=subprocess.PIPE)
+                                  '--FRWS_KEY', 'mm5201314',
+                                  '--FMWS_CACHE', '/mnt/hgfs/mingdfs/fmws_cache'], stdout=subprocess.PIPE)
             p.wait(timeout=times)
             print(p.stdout.read().decode())
         except subprocess.TimeoutExpired as e:

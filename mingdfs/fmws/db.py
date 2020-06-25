@@ -1,4 +1,5 @@
 from mingdfs.db_mysql import MySQLBase
+from mingdfs.fmws import settings
 
 
 class User(MySQLBase):
@@ -29,7 +30,18 @@ class User(MySQLBase):
         充值
         select money from user where user_name = 'xxx' and passwd = 'xxx'
         update user set money = 12312 where user_name = 'xxx' and passwd = 'xxx'
+        根据api_key查user_id
+        select id from user where api_key = 'xxx'
     """
+    def get_user_id_by_api_key(self, api_key):
+        sql = 'select id from user where api_key = %s'
+        args = (api_key, )
+        results = self.mysql_pool.query(sql, args)
+        if len(results) != 0:
+            return results[0]['id']
+        else:
+            return None
+
     def exists(self, user_name, email):
         sql = "select id from user where user_name = %s or email = %s"
         args = (user_name, email)
@@ -121,7 +133,29 @@ class File(MySQLBase):
         insert into file(user_id, title, category_id, add_time, last_edit_time, last_access_time, file_size, file_extension,
                         third_user_id)
                     value(xxx, 'xxx', xxx, 12412231, 12312, 1231231, 12312, 'xxx', xxx)
+        查询文件是否存在
+        select id from file where user_id = 'xxx' and third_user_id = 'xxx' and title = 'xxx' and category_id = 'xxx'
+        获取扩展名
+        select file_extension from file where user_id = %s and third_user_id = %s and title = %s and category_id = %s
     """
+    def get_file_extension(self, user_id, third_user_id, title, category_id):
+        sql = 'select file_extension from file where user_id = %s and third_user_id = %s and title = %s and category_id = %s'
+        args = (user_id, third_user_id, title, category_id)
+        results = self.mysql_pool.query(sql, args)
+        if len(results) != 0:
+            return results[0]['file_extension']
+        else:
+            return None
+
+    def exists(self, user_id, third_user_id, title, category_id):
+        sql = 'select id from file where user_id = %s and third_user_id = %s and title = %s and category_id = %s'
+        args = (user_id, third_user_id, title, category_id)
+        results = self.mysql_pool.query(sql, args)
+        if len(results) != 0:
+            return True
+        else:
+            return False
+
     def upload_file(self, user_id, title, category_id, add_time, last_edit_time, last_access_time, file_size, file_extension,
                     third_user_id):
         sql = ("insert into file(user_id, title, category_id, add_time, last_edit_time, last_access_time, file_size, file_extension,"
@@ -159,3 +193,26 @@ class File(MySQLBase):
             return True
         else:
             return False
+
+
+class RediOP:
+    def __init__(self, redis_cli):
+        self.redis_cli = redis_cli
+
+    def get_best_frws_host_name_port(self):
+        stat_infor = self.redis_cli.get(settings.CACHE_FRWS_STAT_INFOR_KEY)
+        if stat_infor is None:
+            return {"data": [], "status": 0}
+        stat_infor = stat_infor.decode()
+        best_frws = stat_infor[settings.CACHE_STAT_BEST_FRWS_KEY]
+
+        host_name = None
+        port = None
+        for k, v in best_frws.items():
+            host_name = k
+            port = v
+            break
+        if host_name != None and port != None:
+            return host_name, port
+        else:
+            return None, None

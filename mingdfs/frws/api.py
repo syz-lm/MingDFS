@@ -50,8 +50,8 @@ def upload():
             file_extension_name = upload_file_name.rsplit('.', 1)[1]
             if file_extension_name != file_extension:
                 raise
-
-            save_file_name += '.' + file_extension_name
+            if file_extension != '':
+                save_file_name += '.' + file_extension_name
         except:
             return {"data": [], "status": 0}
 
@@ -93,7 +93,9 @@ def download():
         category_id = request.args.get("category_id")
         file_extension = request.args.get('file_extension')
         file_name = str(user_id) + '_' + str(third_user_id) + '_' + base64.standard_b64encode(title.encode()).decode() + \
-                    '_' + str(category_id) + "." + file_extension
+                    '_' + str(category_id)
+        if file_extension != '':
+            file_name = file_name + "." + file_extension
 
         for save_dir in settings.SAVE_DIRS:
             file_path = save_dir + os.path.sep + file_name
@@ -136,13 +138,17 @@ def edit():
         for save_dir in settings.SAVE_DIRS:
             src_save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(src_third_user_id) + '_' + \
                                  base64.standard_b64encode(src_title.encode()).decode() + \
-                                 '_' + str(src_category_id) + "." + src_file_extension
+                                 '_' + str(src_category_id)
+            if src_file_extension != '':
+                src_save_file_name = src_save_file_name + "." + src_file_extension
             if not os.path.exists(src_save_file_name):
                 continue
 
             new_save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(new_third_user_id) + '_' + \
                                  base64.standard_b64encode(new_title.encode()).decode() + \
-                                 '_' + str(new_category_id) + "." + new_file_extension
+                                 '_' + str(new_category_id)
+            if new_file_extension != '':
+                new_save_file_name = new_save_file_name + "." + new_file_extension
 
             if os.path.exists(new_save_file_name):
                 return {"data": [], "status": 0}
@@ -174,7 +180,10 @@ def delete():
 
         for save_dir in settings.SAVE_DIRS:
             save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(third_user_id) + '_' + base64.standard_b64encode(title.encode()).decode() + \
-                             '_' + str(category_id) + "." + file_extension
+                             '_' + str(category_id)
+            if file_extension != '':
+                save_file_name = save_file_name + "." + file_extension
+
             if os.path.exists(save_file_name):
                 try:
                     os.remove(save_file_name)

@@ -35,3 +35,35 @@ HOST = '0.0.0.0'
 PORT = 15675
 FMWS_KEY = 'mm5201314'
 FRWS_KEY = 'mm5201314'
+
+FMWS_CACHE = '/mnt/hgfs/mingdfs/fmws_cache'
+
+FRWS_API_TEMPLATE = {
+    'upload': {
+        'method': 'get',
+        'url': 'http://%s:%d/file/upload'
+    },
+    'download': {
+        'method': 'get',
+        'url': 'http://%s:%d/file/download'
+    },
+    'edit': {
+        'method': 'edit',
+        'url': 'http://%s:%d/file/edit'
+    },
+    'delete': {
+        'method': 'get',
+        'url': 'http://%s:%d/file/delete'
+    },
+    'stat': {
+        'method': 'get',
+        'url': 'http://%s:%d/file/stat'
+    }
+}
+
+
+CACHE_FRWS_STAT_INFOR_KEY = 'frws_stat_infor'
+CACHE_FRWS_COMPUTERS_KEY = 'frws_computers'
+CACHE_STAT_INTERVAL_KEY = 'stat_interval'
+
+CACHE_STAT_BEST_FRWS_KEY = 'best_frws'

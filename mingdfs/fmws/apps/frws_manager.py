@@ -2,6 +2,7 @@ from flask import Blueprint, request
 from mingdfs.fmws import settings
 from mingdfs.utils import load_hosts, dump_hosts
 import requests
+from mingdfs.fmws import apps
 
 FRWS_MANAGER_BP = Blueprint('frws_manager_bp', __name__)
 
@@ -44,4 +45,5 @@ def register_frws():
         ih[ip].add(host_name)
         dump_hosts(ih)
 
+        apps.REDIS_CLI.hset(settings.CACHE_FRWS_COMPUTERS_KEY, host_name, port)
         return {"data": [], "status": 1}

@@ -1,7 +1,13 @@
 from unittest import TestCase
 
-from mingdfs.fmws.apps import MYSQL_POOL
+
+from mingdfs.fmws.apps import init_mr
 from mingdfs.fmws.db import User, File
+from mingdfs.fmws import settings
+
+init_mr()
+
+from mingdfs.fmws.apps import MYSQL_POOL, REDIS_CLI
 
 
 class UserTest(TestCase):
@@ -38,3 +44,9 @@ class FileTest(TestCase):
 
         print(self.file.edit_file(user_id, 'xxx', 'bbb', 'xxx', 'bbb', 'xxx', 'bbb',
                                   2, 1, 2, 'mp4', 'flv'))
+
+
+class Test(TestCase):
+    def test_best_frws(self):
+        stat_infor = REDIS_CLI.get(settings.CACHE_FRWS_STAT_INFOR_KEY)
+        print(stat_infor)

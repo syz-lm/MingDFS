@@ -40,4 +40,7 @@ CREATE UNIQUE INDEX unique_email ON user(email);
 CREATE UNIQUE INDEX unique_api_key ON user(api_key);
 
 CREATE UNIQUE INDEX unique_uttc ON file(user_id, third_user_id, title, category_id);
+#drop index unique_uttc on file;
+#下面这行索引key的长度会超过限制
+#CREATE UNIQUE INDEX unique_uttcf ON file(user_id, third_user_id, title, category_id, file_extension);
 ```

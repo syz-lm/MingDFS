@@ -13,8 +13,8 @@ from redis import StrictRedis
 from mingdfs.db_mysql import MySQLPool
 from mingdfs.fmws import settings
 
-REDIS_CLI= None
-MYSQL_POOL = None
+REDIS_CLI: StrictRedis = None
+MYSQL_POOL: MySQLPool = None
 
 def check_rm():
     global MYSQL_POOL, REDIS_CLI

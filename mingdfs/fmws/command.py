@@ -1,6 +1,9 @@
 import argparse
 import logging
 import json
+import os
+from multiprocessing import Process
+from mingdfs.fmws.stat_process import start_stat
 
 
 def main(log_level=logging.DEBUG, debug=False):
@@ -38,6 +41,12 @@ def main(log_level=logging.DEBUG, debug=False):
     parser.add_argument('--FRWS_KEY', type=str, default='mm5201314',
                         help='输入fmws服务端口：默认，mm5201314')
 
+    parser.add_argument('--FMWS_CACHE', type=str, default='/mnt/hgfs/mingdfs/fmws_cache',
+                        help='输入fmws缓冲区路径：默认，/mnt/hgfs/mingdfs/fmws_cache')
+
+    parser.add_argument('--STAT_INTERVAL', type=int, default=300,
+                        help='输入统计进程执行间隔：默认，300秒')
+
     flags = parser.parse_args()
     try:
         _read_command_line(flags, debug)
@@ -61,14 +70,34 @@ def _read_command_line(flags, debug):
     settings.HOST = flags.HOST
     settings.PORT = flags.PORT
 
-    from mingdfs.fmws import apps
+    settings.FMWS_CACHE = flags.FMWS_CACHE
 
+
+
+    if not os.path.exists(settings.FMWS_CACHE):
+        os.makedirs(settings.FMWS_CACHE, exist_ok=True)
+
+    from mingdfs.fmws import apps
     apps.init_mr()
+    apps.REDIS_CLI.set(settings.CACHE_STAT_INTERVAL_KEY, flags.STAT_INTERVAL)
     apps.init_app()
+
+    fmws_p = None
+    stat_p = Process(target=start_stat)
+
     if not debug:
-        apps.start_fmws(settings.HOST, settings.PORT)
+        fmws_p = Process(target=apps.start_fmws, args=(settings.HOST, settings.PORT))
     else:
-        apps.debug(settings.HOST, settings.PORT)
+        fmws_p = Process(target=apps.debug, args=(settings.HOST, settings.PORT))
+
+    if fmws_p:
+        stat_p.start()
+
+        fmws_p.daemon = True
+
+        fmws_p.start()
+        fmws_p.join()
+    raise
 
 
 if __name__ == '__main__':
