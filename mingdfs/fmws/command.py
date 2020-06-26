@@ -1,9 +1,13 @@
+from gevent import monkey
+
+monkey.patch_all()
 import argparse
 import logging
 import json
 import os
 from multiprocessing import Process
 from mingdfs.fmws.stat_process import start_stat
+
 
 
 def main(log_level=logging.DEBUG, debug=False):
@@ -100,4 +104,4 @@ def _read_command_line(flags, debug):
 
 
 if __name__ == '__main__':
-    main(debug=True)
+    main(debug=False)

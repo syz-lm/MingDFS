@@ -1,5 +1,4 @@
 from gevent.pywsgi import WSGIServer
-from gevent import monkey
 
 import logging
 import traceback
@@ -81,10 +80,8 @@ def _init_bp():
 def start_fmws(host, port):
     global APP
     try:
-        monkey.patch_all()
         _init_bp()
 
-        print('fmws start.')
         http_server = WSGIServer((host, port), APP)
         http_server.serve_forever()
     except Exception as e:

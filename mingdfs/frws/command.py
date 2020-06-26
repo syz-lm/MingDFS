@@ -1,3 +1,7 @@
+from gevent import monkey
+
+monkey.patch_all()
+
 import argparse
 import logging
 import os
@@ -36,7 +40,8 @@ def main(log_level=logging.DEBUG):
                         help='输入fmws服务端口：默认，mm5201314')
 
     # --HOST 0.0.0.0 --PORT 15676 --HOST_NAME frws0 --SAVE_DIRS / /home /usr
-    parser.add_argument('--SAVE_DIRS', type=str, nargs='+', default=[], help='输入服务器存储路径列表：默认，[]')
+    from mingdfs.frws import settings
+    parser.add_argument('--SAVE_DIRS', type=str, nargs='+', default=settings.SAVE_DIRS, help='输入服务器存储路径列表：默认，%s' % settings.SAVE_DIRS)
 
     flags = parser.parse_args()
     try:
