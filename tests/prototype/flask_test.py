@@ -4,9 +4,13 @@ import time
 from unittest import TestCase
 
 small_file = "small_video.mp4"
+img = 'register.png'
 big_file = "/Volumes/GoodByeUbuntu/reborn/video/1584405236.4538555_Forrest.Gump.1994.BluRay.720p.AAC.x264-iSCG.mp4"
 test_api = 'http://localhost:9000'
 download_dir = './flask_test_download'
+
+if not os.path.exists(download_dir):
+    os.makedirs(download_dir)
 
 
 class Test(TestCase):
@@ -15,8 +19,14 @@ class Test(TestCase):
         r = requests.get(test_api, data={"file_name": small_file}, files=files)
         print(r.status_code)
 
+    def test_upload_img(self):
+        files = {'file_name': open(img, 'rb')}
+        r = requests.get(test_api, data={"file_name": img}, files=files)
+        print(r.status_code)
+
     def test_view_small_video(self):
         r = requests.get(test_api + '/view', params={"file_name": small_file})
+        print(r.url)
         save_file = download_dir + os.path.sep + str(time.time()) + '.mp4'
         with open(save_file, 'wb') as f:
             f.write(r.content)

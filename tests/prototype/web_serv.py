@@ -9,6 +9,9 @@ config = {
     'file_cache_dir': './file_cache'
 }
 
+if not os.path.exists(config['file_cache_dir']):
+    os.makedirs(config['file_cache_dir'])
+
 app = Flask(__name__, static_folder='./web_serv_static',
             template_folder='./web_serv_templates')
 
@@ -62,4 +65,4 @@ def eye_host():
     return request.remote_addr
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=9000, debug=True)
+    app.run(host='0.0.0.0', port=9000, debug=True)
