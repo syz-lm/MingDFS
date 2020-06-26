@@ -8,6 +8,17 @@
     <script src={{url_for("static", filename="jquery-3.4.1.min.js")}}></script>
 </head>
 <body>
+    <fieldset class="login">
+        <legend>登录</legend>
+        <input type="text" name="user_name" placeholder="请输入用户名"><br>
+        <input type="password" name="passwd" placeholder="请输入密码"><br>
+
+        <div class="bts">
+            <button class="submit">登录</button>
+            <button class="register">注册</button>
+            <button class="change_passwd">改密</button>
+        </div>
+    </fieldset>
     <script src={{url_for("static", filename="pc/js/login.js")}}></script>
 </body>
 </html>

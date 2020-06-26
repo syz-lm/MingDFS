@@ -1,0 +1,48 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+.register {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-color: blue;
+}
+
+input {
+    width: 264px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+input[name="check_code"] {
+    width: 132px;
+    margin-right: 5px;
+}
+
+.send_check_code {
+    width: 125px;
+    margin-right: 5px;
+    height: 25px;
+    color: blue;
+}
+
+.submit {
+    margin-left: 132px;
+    width: 132px;
+    transform: translate(-50%);
+    margin-bottom: 5px;
+    height: 25px;
+}
+
+body {
+    background-color: black;
+}
+
+legend {
+    color: white;
+}

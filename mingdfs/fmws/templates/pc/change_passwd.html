@@ -9,6 +9,17 @@
     <script src={{url_for("static", filename="jquery-3.4.1.min.js")}}></script>
 </head>
 <body>
+    <fieldset class="change_passwd">
+        <legend>修改密码</legend>
+        <input type="text" name="user_name" placeholder="请输入用户名"><br>
+        <input type="password" name="passwd" placeholder="请输入密码"><br>
+        <input type="password" name="re_passwd" placeholder="请再次输入密码"><br>
+        <input type="email" name="email" placeholder="请输入邮箱"><br>
+        <input type="check_code" name="check_code" placeholder="请输入验证码">
+        <button class="send_check_code">发送邮箱验证码</button><br>
+
+        <button class="submit">提交</button>
+    </fieldset>
     <script src={{url_for("static", filename="pc/js/change_passwd.js")}}></script>
 </body>
 </html>

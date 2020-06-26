@@ -1,0 +1,32 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+.login {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
+    border-color: blue;
+}
+
+input {
+    width: 264px;
+    margin: 5px 5px 0px 5px;
+}
+
+body {
+    background-color: black;
+}
+
+legend {
+    color: white;
+}
+
+.bts {
+    margin-top: 5px;
+    margin-left: 50%;
+    transform: translate(-50%);
+}

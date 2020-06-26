@@ -1,0 +1,43 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    background-color: black;
+}
+
+.header {
+    height: 65px;
+    background-color: blue;
+    font-size: 50px;
+    width: 960px;
+    white-space: nowrap;
+    margin: 0 auto;
+}
+
+.logout {
+    float: right;
+}
+
+.files {
+    width: 960px;
+    /*background-color: white;*/
+    margin: 0 auto;
+    border: solid 1px blue;
+    margin-top: 5px;
+    border-bottom: none;
+}
+
+.status_line {
+    width: 960px;
+    height: 30px;
+    background-color: blue;
+    position: absolute;
+    bottom: 0px;
+    left: 50%;
+    transform: translate(-50%);
+    border: solid 1px blue;
+    border-top: none;
+}
+

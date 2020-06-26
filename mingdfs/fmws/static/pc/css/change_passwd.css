@@ -1,0 +1,44 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.change_passwd {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-color: blue;
+}
+
+input {
+    width: 264px;
+    margin: 5px 5px 0px 5px;
+}
+
+input[name='check_code'] {
+    width: 132px;
+    margin-left: 5px;
+    margin-right: 0px
+}
+
+.send_check_code {
+    width: 127px;
+    height: 25px;
+    color: blue;
+}
+
+.submit {
+    width: 132px;
+    margin-left: 50%;
+    transform: translate(-50%);
+    height: 25px;
+}
+
+legend {
+    color: white;
+}
+
+body {
+    background-color: black;
+}

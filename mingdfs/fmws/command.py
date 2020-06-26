@@ -18,9 +18,9 @@ def main(log_level=logging.DEBUG, debug=False):
                         help=("输入服务器MYSQL配置：默认，"
                               '{"host": "serv_pro", "user": "root", "passwd": "mm5201314", "db": "mingdfs", "size": 5}'))
 
-    parser.add_argument('--MAIL_CONFIG', type=json.loads, default='{"host": "smtp.qq.com", "port": 465, "username": "858556393@qq.com", "password": "xikqxdjcuctpbdge", "forget_password_msg": "%d"}',
+    parser.add_argument('--MAIL_CONFIG', type=json.loads, default='{"host": "smtp.qq.com", "port": 465, "username": "858556393@qq.com", "password": "hacnvlxplaqkbbhj", "forget_password_msg": "[XXX: MingDFS] 您的验证码: %d"}',
                         help=('输入mail配置：默认，'
-                              '{"host": "smtp.qq.com", "port": 465, "username": "858556393@qq.com", "password": "xikqxdjcuctpbdge", "forget_password_msg": "用户指定的错误信息"}'))
+                              '{"host": "smtp.qq.com", "port": 465, "username": "858556393@qq.com", "password": "hacnvlxplaqkbbhj", "forget_password_msg": "[XXX: MingDFS] 您的验证码: %d"}'))
 
     parser.add_argument('--REDIS_CONFIG', type=json.loads, default='{"host": "serv_pro", "port": 6379, "db": 0, "passwd": "mm5201314"}',
                         help=('输入redis配置：默认，'
@@ -72,6 +72,7 @@ def _read_command_line(flags, debug):
 
     settings.FMWS_CACHE = flags.FMWS_CACHE
 
+    logging.debug('MAIL_CONFIG: %s', str(settings.MAIL_CONFIG))
     if not os.path.exists(settings.FMWS_CACHE):
         os.makedirs(settings.FMWS_CACHE, exist_ok=True)
 

@@ -125,7 +125,7 @@ class File(MySQLBase):
             where user_id = xxx and title = 'xxx' and category_id = 'xxx' and third_user_id = xxx
         修改文件(不修改文件内容)
         update file set third_user_id = xxx, title = 'xxx', category_id = 'xxx', last_edit_time = xxx,
-                    file_size = xxx, file_extension = xxx
+                    file_extension = xxx
             where user_id = xxx and third_user_id = xxx and category_id = xxx and title = 'xxx'
         修改文件内容(先删除，再重新上传)
         delete from file
@@ -180,14 +180,14 @@ class File(MySQLBase):
 
     def edit_file(self, user_id, src_third_user_id, new_third_user_id,
                   src_title, new_title, src_category_id, new_category_id,
-                  last_edit_time, src_file_size, new_file_size,
+                  last_edit_time,
                   src_file_extension, new_file_extension):
         sql = ("update file set third_user_id = %s, title = %s, category_id = %s, last_edit_time = %s,"
-               "file_size = %s, file_extension = %s"
+               "file_extension = %s"
                "where user_id = %s and third_user_id = %s and category_id = %s and title = %s"
-               " and file_size = %s and file_extension = %s")
-        args = (new_third_user_id, new_title, new_category_id, last_edit_time, new_file_size, new_file_extension,
-                user_id, src_third_user_id, src_category_id, src_title, src_file_size, src_file_extension)
+               " and file_extension = %s")
+        args = (new_third_user_id, new_title, new_category_id, last_edit_time, new_file_extension,
+                user_id, src_third_user_id, src_category_id, src_title, src_file_extension)
         affect_rows = self.mysql_pool.edit(sql, args)
         if affect_rows != 0:
             return True

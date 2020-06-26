@@ -50,7 +50,7 @@ def upload():
 
             save_path = settings.FMWS_CACHE + os.path + file.filename
             try:
-                file.save(save_path)
+                my_file.save(save_path)
             except:
                 logging.error(traceback.format_exc())
                 print('文件存储失败', save_path)
@@ -65,7 +65,15 @@ def upload():
                 r = requests.request(method, url, files=files)
                 r.raise_for_status()
                 if r.json()['status'] != 0:
-                    return {"data": [], "status": 1}
+                    file_size = os.path.getsize(save_path)
+                    add_time = int(time.time())
+                    last_edit_time = add_time
+                    last_access_time = 0
+                    if not file.upload_file(user_id, title, category_id, add_time, last_edit_time,
+                                            last_access_time, file_size, file_extension, third_user_id):
+                        return {"data": [], "status": 0}
+                    else:
+                        return {"data": [], "status": 1}
                 else:
                     return {"data": [], "status": 0}
             except:
@@ -175,7 +183,12 @@ def delete():
         r = requests.request(method, url, data=form_data, headers={'Connection': 'close'})
         r.raise_for_status()
         if r.json()['status'] != 0:
-            return {"data": [], "status": 1}
+            file = File(MYSQL_POOL)
+            if not file.delete_file(user_id, third_user_id, title, category_id):
+                print('frws上的文件已经删除成功，但是数据库中没有删除成功', user_id, third_user_id, title, category_id)
+                return {"data": [], "status": 0}
+            else:
+                return {"data": [], "status": 1}
         else:
             return {"data": [], "status": 0}
 
@@ -237,6 +250,15 @@ def edit():
         r = requests.request(method, url, data=form_data, headers={'Connection': 'close'})
         r.raise_for_status()
         if r.json()['status'] != 0:
-            return {"data": [], "status": 1}
+            file = File(MYSQL_POOL)
+            if not file.edit_file(user_id, src_third_user_id, new_third_user_id,
+                                  src_title, new_title, src_category_id, new_category_id,
+                                  int(time.time()), src_file_extension, new_file_extension):
+                print("frws文件已经修改成功，但是数据库中修改失败", user_id, src_third_user_id, new_third_user_id,
+                                  src_title, new_title, src_category_id, new_category_id,
+                                  int(time.time()), src_file_extension, new_file_extension)
+                return {"data": [], "status": 0}
+            else:
+                return {"data": [], "status": 1}
         else:
             return {"data": [], "status": 0}

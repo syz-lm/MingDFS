@@ -1,8 +1,12 @@
-from flask import Blueprint, request, session, render_template, abort
+from flask import Blueprint, request, session, render_template, abort, redirect, url_for
 from mingdfs.fmws.db import User
 from mingdfs.fmws import apps
 from mingdfs.utils import pc_or_mobile, PC, MOBILE
 from mingdfs.fmws.settings import IS_LOGIN
+from mingdfs.fmws import settings
+from mingdfs.email import send_text_email
+import random
+
 
 import time
 import hashlib
@@ -55,7 +59,7 @@ def register():
             abort(403, "不支持的客户端")
 
 
-@USER_BP.route('/login', methods=['POST'])
+@USER_BP.route('/login', methods=['POST', 'GET'])
 def login():
     """登录
 
@@ -76,6 +80,9 @@ def login():
         else:
             return {"data": [], "status": 0}
     elif request.method == 'GET':
+        if session.get(IS_LOGIN, None) is not None:
+            return redirect(url_for('home_bp.home'))
+
         if pc_or_mobile(request.headers['User-Agent']) == PC:
             return render_template('pc/login.html')
         elif pc_or_mobile(request.headers['User-Agent']) == MOBILE:
@@ -84,7 +91,7 @@ def login():
             abort(403, '不支持的客户端')
 
 
-@USER_BP.route('/change_passwd', methods=['POST'])
+@USER_BP.route('/change_passwd', methods=['POST', 'GET'])
 def change_passwd():
     """修改密码
 
@@ -137,3 +144,28 @@ def pay():
                 失败 {"data": [], "status": 0}
     """
     pass
+
+
+@USER_BP.route('/send_check_code', methods=['POST'])
+def send_check_code():
+    """
+    发送邮箱验证码
+
+    POST 请求form表单 {"email": xxx}
+        返回json 成功: {"data": [], "status": 1}
+                失败: {"data": [], "status": 0}
+    """
+    if request.method == 'POST':
+        to = request.form['email']
+        rand_n = random.randint(100000, 1000000)
+        result = send_text_email(settings.MAIL_CONFIG['host'], settings.MAIL_CONFIG['port'],
+                                 settings.MAIL_CONFIG['username'], settings.MAIL_CONFIG['password'],
+                                 settings.MAIL_CONFIG['username'], [to], "验证码",
+                                 settings.MAIL_CONFIG['username'], to,
+                                 settings.MAIL_CONFIG['forget_password_msg'] % rand_n)
+        if result == 1:
+            session[to] = str(rand_n)
+
+            return {"data": [], "status": 1}
+        else:
+            return {"data": [], "status": 0}

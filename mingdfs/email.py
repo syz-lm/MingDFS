@@ -13,7 +13,7 @@ def send_text_email(host, port, username, password, sender, receivers,
     message['To'] = Header(to, 'utf-8')
 
     message['Subject'] = Header(subject, 'utf-8')
-
+    smtp_conn = None
     try:
         smtp_conn = smtplib.SMTP_SSL(host, port)
         smtp_conn.login(username, password)

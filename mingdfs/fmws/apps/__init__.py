@@ -69,11 +69,13 @@ def _init_bp():
     from mingdfs.fmws.apps.file import FILE_BP
     from mingdfs.fmws.apps.user import USER_BP
     from mingdfs.fmws.apps.frws_manager import FRWS_MANAGER_BP
+    from mingdfs.fmws.apps.home import HOME_BP
     #
     # 注册蓝图
     APP.register_blueprint(FILE_BP, url_prefix="/file")
     APP.register_blueprint(USER_BP, url_prefix="/user")
     APP.register_blueprint(FRWS_MANAGER_BP, url_prefix="/frws_manager")
+    APP.register_blueprint(HOME_BP, url_prefix='')
 
 
 def start_fmws(host, port):
