@@ -81,6 +81,10 @@ tr, td, th {
     width: inherit;
 }
 
+.file_name {
+    cursor: crosshair;
+}
+
 td:hover, th:hover {
     background-color: gray;
     color: white;
