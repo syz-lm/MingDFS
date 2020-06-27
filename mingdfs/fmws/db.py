@@ -1,5 +1,7 @@
 from mingdfs.db_mysql import MySQLBase
 from mingdfs.fmws import settings
+import json
+import logging
 
 
 class User(MySQLBase):
@@ -32,7 +34,27 @@ class User(MySQLBase):
         update user set money = 12312 where user_name = 'xxx' and passwd = 'xxx'
         根据api_key查user_id
         select id from user where api_key = 'xxx'
+        根据user_id获取用户名
+        select user_name from user where id = %s
     """
+    def get_user_name_by_user_id(self, user_id):
+        sql = 'select user_name from user where id = %s'
+        args = (user_id,)
+        results = self.mysql_pool.query(sql, args)
+        if len(results) != 0:
+            return results[0]['user_name']
+        else:
+            return None
+
+    def get_api_key_by_user_id(self, user_id):
+        sql = 'select api_key from user where id = %s'
+        args = (user_id, )
+        results = self.mysql_pool.query(sql, args)
+        if results and len(results) != 0:
+            return results[0]['api_key']
+        else:
+            return None
+
     def get_user_id_by_api_key(self, api_key):
         sql = 'select id from user where api_key = %s'
         args = (api_key, )
@@ -203,14 +225,15 @@ class RediOP:
         stat_infor = self.redis_cli.get(settings.CACHE_FRWS_STAT_INFOR_KEY)
         if stat_infor is None:
             return {"data": [], "status": 0}
-        stat_infor = stat_infor.decode()
+        logging.debug('stat_infor: %s', stat_infor)
+        stat_infor = json.loads(stat_infor.decode())
         best_frws = stat_infor[settings.CACHE_STAT_BEST_FRWS_KEY]
 
         host_name = None
         port = None
         for k, v in best_frws.items():
             host_name = k
-            port = v
+            port = v['port']
             break
         if host_name != None and port != None:
             return host_name, port

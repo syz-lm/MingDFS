@@ -23,9 +23,9 @@ def upload():
     """
     if request.method == 'POST':
         api_key = request.form['api_key']
-        third_user_id = request.form['third_user_id']
+        third_user_id = request.form.get('third_user_id', '0');
         title = request.form['title']
-        category_id = request.form['category_id']
+        category_id = request.form.get('category_id', '0');
 
         user = User(MYSQL_POOL)
         user_id = user.get_user_id_by_api_key(api_key)
@@ -48,7 +48,7 @@ def upload():
             if host_name is None or port is None:
                 return {"data": [], "status": 0}
 
-            save_path = settings.FMWS_CACHE + os.path + file.filename
+            save_path = settings.FMWS_CACHE + os.path.sep + my_file.filename
             try:
                 my_file.save(save_path)
             except:
@@ -57,15 +57,27 @@ def upload():
                 return {"data": [], 'status': 0}
 
             u = settings.FRWS_API_TEMPLATE['upload']
-            method = u['method￿']
+            f = None
+            method = None
+            url = None
             try:
+                file_size = os.path.getsize(save_path)
+
+                method = u['method']
                 f = open(save_path, 'rb')
                 url = u['url'] % (host_name, port)
                 files = {'upload_file_name': f}
-                r = requests.request(method, url, files=files)
+                form_data = {
+                    'user_id': user_id,
+                    'third_user_id': third_user_id,
+                    'title': title,
+                    'category_id': category_id,
+                    'file_extension': file_extension,
+                    'file_size': file_size
+                }
+                r = requests.request(method, url, data=form_data, files=files)
                 r.raise_for_status()
                 if r.json()['status'] != 0:
-                    file_size = os.path.getsize(save_path)
                     add_time = int(time.time())
                     last_edit_time = add_time
                     last_access_time = 0

@@ -2,21 +2,112 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>主页</title>
+    <title>MingDFS分布式文件系统</title>
     <link rel="shortcut icon" href={{ url_for("static", filename="favicon.ico") }}>
     <link href={{url_for("static", filename="pc/css/home.css")}} rel="stylesheet"/>
     <script src={{url_for("static", filename="jquery-3.4.1.min.js")}}></script>
 </head>
 <body>
     <div class="header">
-        <span class="title">欢迎使用MingDFS分布式文件系统</span> <a href="#" class="logout">退出</a>
+        <span class="title">欢迎
+            <user>
+            {% if user_name %}
+                {{user_name}}
+            {% else %}
+                您
+            {% endif %}
+            </user>使用MingDFS分布式文件系统。</span> <a href="#" class="logout">退出</a>
     </div>
-    <div class="files">
+    <div class="content">
+        <span class="now">正在获取当前时间</span>
+        <button class="upload_file">上传文件</button>
 
+        <div class="files">
+            <table class="left">
+                <tr>
+                    <th>文件名</th>
+                    <th>大小(字节)</th>
+                    <th>创建时间</th>
+                    <th>最后一次修改时间</th>
+                    <th>最后一次访问时间</th>
+                </tr>
+                <tr class="file">
+                    <td class="file_name">星际争霸</td>
+                    <td>12121212</td>
+                    <td>121211</td>
+                    <td>12123123</td>
+                    <td>12123123</td>
+                </tr>
+                <tr class="file">
+                    <td class="file_name">星际争霸</td>
+                    <td>12121212</td>
+                    <td>121211</td>
+                    <td>12123123</td>
+                    <td>12123123</td>
+                </tr>
+            </table>
+
+            <table class="right">
+                <tr>
+                    <th>文件名</th>
+                    <th>大小(字节)</th>
+                    <th>创建时间</th>
+                    <th>最后一次修改时间</th>
+                    <th>最后一次访问时间</th>
+                </tr>
+                <tr class="file">
+                    <td class="file_name">星际争霸</td>
+                    <td>12121212</td>
+                    <td>121211</td>
+                    <td>12123123</td>
+                    <td>12123123</td>
+                </tr>
+
+                <tr class="file">
+                    <td class="file_name">星际争霸</td>
+                    <td>12121212</td>
+                    <td>121211</td>
+                    <td>12123123</td>
+                    <td>12123123</td>
+                </tr>
+            </table>
+        </div>
     </div>
-    <div class="status_line">
-        文件大小: xxx
+
+    <audio controls="controls">
+        <source src={{url_for('static', filename="群星 - 时光.mp3")}}/>
+    </audio>
+
+    <div class="popu_menu">
+        <hidden class="clicked_dom" value=""></hidden>
+        <div class="layout">
+            <a class="delete" href="#">删除</a><br>
+            <a class="re_name" href="#">重命名</a><br>
+            <a class="cancel" href="#">取消</a>
+        </div>
     </div>
+
+    <div class="upload_panel">
+        <div class="layout">
+            <div>上传文件对话框</div>
+            <input type="text" name="file_name" placeholder="请输入上传文件名">
+            <input type="file" name="upload_file_name">
+            <button class="submit_upload">提交</button>
+            <button class="submit_cancel">取消</button>
+        </div>
+    </div>
+
+    <div id="upload_progressbar">
+        <div class="layout">
+            <meter max="100" value="0" min="0" low="30" high="60"></meter>
+        </div>
+    </div>
+
+    <hidden class="api_key">
+        {% if api_key %}
+            {{ api_key }}
+        {% endif %}
+    </hidden>
     <script src={{url_for("static", filename="pc/js/home.js")}}></script>
 </body>
 </html>

@@ -104,4 +104,4 @@ def _read_command_line(flags, debug):
 
 
 if __name__ == '__main__':
-    main(debug=False)
+    main(debug=True)

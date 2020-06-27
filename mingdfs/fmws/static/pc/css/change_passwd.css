@@ -36,7 +36,7 @@ input[name='check_code'] {
 }
 
 legend {
-    color: white;
+    color: red;
 }
 
 body {
