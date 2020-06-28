@@ -172,27 +172,31 @@ def delete():
                 失败 {"data": [], "status": 1}
     """
     if request.method == 'GET':
-        user_id = request.form['user_id']
-        third_user_id = request.form['third_user_id']
-        title = request.form['title']
-        category_id = request.form['category_id']
-        file_extension = request.form['file_extension']
+        try:
+            user_id = request.form['user_id']
+            third_user_id = request.form['third_user_id']
+            title = request.form['title']
+            category_id = request.form['category_id']
+            file_extension = request.form['file_extension']
 
-        for save_dir in settings.SAVE_DIRS:
-            save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(third_user_id) + '_' + base64.standard_b64encode(title.encode()).decode() + \
-                             '_' + str(category_id)
-            if file_extension != '':
-                save_file_name = save_file_name + "." + file_extension
+            for save_dir in settings.SAVE_DIRS:
+                save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(third_user_id) + '_' + base64.standard_b64encode(title.encode()).decode() + \
+                                 '_' + str(category_id)
+                if file_extension != '':
+                    save_file_name = save_file_name + "." + file_extension
 
-            if os.path.exists(save_file_name):
-                try:
-                    os.remove(save_file_name)
-                    return {"data": [], "status": 1}
-                except Exception as e:
-                    print('删除文件失败', save_file_name, str(e))
-                    return {"data": [],  'status': 0}
+                if os.path.exists(save_file_name):
+                    try:
+                        os.remove(save_file_name)
+                        return {"data": [], "status": 1}
+                    except Exception as e:
+                        print('删除文件失败', save_file_name, str(e))
+                        return {"data": [],  'status': 0}
 
-        return {"data": [], "status": 0}
+            return {"data": [], "status": 0}
+        except:
+            import traceback
+            print(traceback.format_exc())
 
 
 @FILE_BP.route('/stat', methods=['GET'])

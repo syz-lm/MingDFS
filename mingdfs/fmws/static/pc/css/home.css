@@ -31,12 +31,44 @@ body {
     border: solid 1px red;
 }
 
+.infor {
+    width: 100%;
+}
+
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+.right > div:nth-child(1) {
+    float: left;
+    color: green;
+}
+
+.page {
+    text-align: center;
+    width: fit-content;
+    width: -moz-fit-content;
+}
+
+.go {
+    color: blue;
+    border: solid 1px blue;
+    margin-right: 10px;
+}
+
+.right > div:nth-child(2) {
+    float: right;
+}
+
 .now {
     color: pink;
 }
 
 .upload_file {
-    float: right;
     border: solid 1px blue;
     color: blue;
     font-size: 13px;
@@ -51,30 +83,34 @@ audio {
     bottom: 0;
     right: 50%;
     transform: translate(50%);
+    background-color: rgba(0, 0, 0, .2);
 }
 
 user {
     color: pink;
 }
 
-.left, .right {
+table {
     color: green;
-    border: solid 1px green;
-    width: 535px;
-}
-
-.left {
-    float: left;
-}
-
-.right {
-    float: right;
+    border: solid 1px blue;
+    width: 1080px;
 }
 
 tr, td, th {
-    border: solid 1px green;
+    border: solid 1px blue;
     text-align: center;
-    white-space: nowrap;
+}
+
+td {
+    word-break: break-all;
+}
+
+td[class='file_name'] {
+    width: 200px;
+}
+
+td[class='fs_title'] {
+    width: 200px;
 }
 
 .files {
@@ -83,6 +119,8 @@ tr, td, th {
 
 .file_name {
     cursor: crosshair;
+    color: yellowgreen;
+    text-align: left;
 }
 
 td:hover, th:hover {
@@ -99,6 +137,7 @@ td:hover, th:hover {
     background-color: rgba(0, 0, 0, .2);
     top: 0;
     left: 0;
+    z-index: 100;
 }
 
 .popu_menu > .layout {
@@ -109,6 +148,12 @@ td:hover, th:hover {
     position: absolute;
     top: 0;
     left: 0;
+}
+
+
+.popu_menu > .layout > a:hover {
+    background-color: gray;
+    color: white;
 }
 
 .upload_panel {
@@ -136,16 +181,21 @@ td:hover, th:hover {
     width: 290px;
     margin-left: 2px;
     margin-right: 2px;
+    font-size: 20px;
+    margin-top: 10px;
 }
 
 .upload_panel > .layout > button {
     width: 300px;
+    font-size: 20px;
+    margin-top: 10px;
 }
 
 .upload_panel > .layout > div {
     width: inherit;
     color: red;
     background-color: blue;
+    font-size: 25px;
 }
 
 
@@ -174,4 +224,12 @@ td:hover, th:hover {
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
+}
+
+.all_file_size {
+    color: green;
+}
+
+.fs_title {
+    text-align: left;
 }

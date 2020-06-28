@@ -4,13 +4,14 @@ import logging
 import traceback
 from datetime import timedelta
 
-from flask import Flask
+from flask import Flask, request, abort
 # 设置APP和SESSION
 from flask_session import Session
 from redis import StrictRedis
 
 from mingdfs.db_mysql import MySQLPool
 from mingdfs.fmws import settings
+from mingdfs.utils import pc_or_mobile, PC, MOBILE
 
 REDIS_CLI: StrictRedis = None
 MYSQL_POOL: MySQLPool = None
@@ -76,9 +77,21 @@ def _init_bp():
     APP.register_blueprint(FRWS_MANAGER_BP, url_prefix="/frws_manager")
     APP.register_blueprint(HOME_BP, url_prefix='')
 
+    def _not_support_mobile():
+        if not request.headers.has_key('User-Agent'):
+            abort(403, '错误的请求头。')
+
+        if request.headers.has_key("User-Agent"):
+            ua = request.headers['User-Agent']
+            if pc_or_mobile(ua) == MOBILE:
+                abort(403, '移动端网站正在建设中。')
+
+    APP.before_request(_not_support_mobile)
+
 
 def start_fmws(host, port):
     global APP
+    http_server = None
     try:
         _init_bp()
 
@@ -97,7 +110,7 @@ def start_fmws(host, port):
             logging.error(traceback.format_exc())
 
         try:
-            http_server.close()
+            if http_server: http_server.close()
         except:
             logging.error(traceback.format_exc())
 

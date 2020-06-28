@@ -8,8 +8,11 @@
     <script src={{url_for("static", filename="jquery-3.4.1.min.js")}}></script>
 </head>
 <body>
-    <fieldset class="register">
-        <legend>注册</legend>
+    <div class="header">
+        欢迎<user>您</user>使用MingDFS分布式文件系统。<bz>SYX</bz>
+    </div>
+    <div class="register">
+        <div class="title">注册</div>
         <input type="text" name="user_name" placeholder="请输入账号"><br>
         <input type="password" name="passwd" placeholder="请输入密码"><br>
         <input type="password" name="re_passwd" placeholder="请再次输入密码"><br>
@@ -18,7 +21,7 @@
         <button class="send_check_code">发送邮箱验证码</button><br>
 
         <button class="submit">提交</button>
-    </fieldset>
+    </div>
 
     <script src={{url_for("static", filename="pc/js/register.js")}}></script>
 </body>

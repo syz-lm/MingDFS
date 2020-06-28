@@ -93,7 +93,7 @@ def _read_command_line(flags, debug):
     else:
         fmws_p = Process(target=apps.debug, args=(settings.HOST, settings.PORT))
 
-    if fmws_p:
+    if fmws_p is not None:
         stat_p.start()
 
         fmws_p.daemon = True

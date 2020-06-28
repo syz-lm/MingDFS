@@ -2,6 +2,7 @@ from mingdfs.db_mysql import MySQLBase
 from mingdfs.fmws import settings
 import json
 import logging
+import math
 
 
 class User(MySQLBase):
@@ -159,7 +160,67 @@ class File(MySQLBase):
         select id from file where user_id = 'xxx' and third_user_id = 'xxx' and title = 'xxx' and category_id = 'xxx'
         获取扩展名
         select file_extension from file where user_id = %s and third_user_id = %s and title = %s and category_id = %s
+        分页获取文件
+        select
+            third_user_id,
+            title,
+            category_id,
+            add_time,
+            last_edit_time,
+            last_access_time,
+            file_size,
+            file_extension
+        from file
+        where
+            user_id = %s
+        limit %s, 25
+        统计该用户下的所有文件大小
+        select sum(file_size) as all_file_size form file where user_id = %s
+        获取该用户总页数
+        select count(id) from file where user_id = %s
     """
+    def get_total_pages_by_user_id(self, user_id):
+        sql = 'select count(id) as count from file where user_id = %s'
+        args = (user_id, )
+        results = self.mysql_pool.query(sql, args)
+        if results is not None and len(results) != 0:
+            count = results[0]['count']
+            return math.ceil(count / 25)
+        else:
+            return None
+
+    def all_file_size(self, user_id):
+        sql = 'select sum(file_size) as all_file_size from file where user_id = %s'
+        args = (user_id, )
+        results = self.mysql_pool.query(sql, args)
+        if results is not None and len(results) != 0:
+            return results[0]['all_file_size']
+        else:
+            return None
+
+    def page_files(self, user_id, page):
+        sql = ("""
+                select
+                    third_user_id,
+                    title,
+                    category_id,
+                    add_time,
+                    last_edit_time,
+                    last_access_time,
+                    file_size,
+                    file_extension
+                from file
+                where
+                    user_id = %s
+                limit %s, 25
+                """)
+        args = (user_id, page)
+        results = self.mysql_pool.query(sql, args)
+        if results != None and len(results) != 0:
+            return results
+        else:
+            return []
+
     def get_file_extension(self, user_id, third_user_id, title, category_id):
         sql = 'select file_extension from file where user_id = %s and third_user_id = %s and title = %s and category_id = %s'
         args = (user_id, third_user_id, title, category_id)
@@ -193,7 +254,8 @@ class File(MySQLBase):
 
     def delete_file(self, user_id, third_user_id, title, category_id):
         sql = "delete from file where user_id = %s and title = %s and category_id = %s and third_user_id = %s"
-        args = (user_id, third_user_id, title, category_id)
+        args = (user_id, title, category_id, third_user_id)
+        print(sql, args)
         affect_rows = self.mysql_pool.edit(sql, args)
         if affect_rows != 0:
             return True

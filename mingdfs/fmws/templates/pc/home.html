@@ -19,56 +19,32 @@
             </user>使用MingDFS分布式文件系统。</span> <a href="#" class="logout">退出</a>
     </div>
     <div class="content">
-        <span class="now">正在获取当前时间</span>
-        <button class="upload_file">上传文件</button>
+        <div class="infor">
+            <div class="left">
+                <span class="now">正在获取当前时间</span>
+            </div>
+            <div class="right">
+                <div>
+                    总页数:<span class="total_pages">正在获取</span>
+                    当前页:<input type="number" class="page" value="1" min="1">
+                    <button class="go">跳转</button>
+                </div>
+                <div>
+                    <span class="all_file_size"></span>
+                    <button class="upload_file">上传文件</button>
+                </div>
+            </div>
+        </div>
 
         <div class="files">
-            <table class="left">
+            <table>
                 <tr>
+                    <th>标题</th>
                     <th>文件名</th>
                     <th>大小(字节)</th>
                     <th>创建时间</th>
                     <th>最后一次修改时间</th>
                     <th>最后一次访问时间</th>
-                </tr>
-                <tr class="file">
-                    <td class="file_name">星际争霸</td>
-                    <td>12121212</td>
-                    <td>121211</td>
-                    <td>12123123</td>
-                    <td>12123123</td>
-                </tr>
-                <tr class="file">
-                    <td class="file_name">星际争霸</td>
-                    <td>12121212</td>
-                    <td>121211</td>
-                    <td>12123123</td>
-                    <td>12123123</td>
-                </tr>
-            </table>
-
-            <table class="right">
-                <tr>
-                    <th>文件名</th>
-                    <th>大小(字节)</th>
-                    <th>创建时间</th>
-                    <th>最后一次修改时间</th>
-                    <th>最后一次访问时间</th>
-                </tr>
-                <tr class="file">
-                    <td class="file_name">星际争霸</td>
-                    <td>12121212</td>
-                    <td>121211</td>
-                    <td>12123123</td>
-                    <td>12123123</td>
-                </tr>
-
-                <tr class="file">
-                    <td class="file_name">星际争霸</td>
-                    <td>12121212</td>
-                    <td>121211</td>
-                    <td>12123123</td>
-                    <td>12123123</td>
                 </tr>
             </table>
         </div>
@@ -108,6 +84,12 @@
             {{ api_key }}
         {% endif %}
     </hidden>
+    <hidden class="current_page">1</hidden>
+
+    <hidden class="yj_category_id"></hidden>
+    <hidden class="yj_title"></hidden>
+    <hidden class="yj_file_extension"></hidden>
+    <hidden class="yj_third_user_id"></hidden>
     <script src={{url_for("static", filename="pc/js/home.js")}}></script>
 </body>
 </html>

@@ -9,11 +9,15 @@
     top: 50%;
     transform: translate(-50%, -50%);
     border-color: blue;
+    background-color: white;
+    width: 300px;
 }
 
 input {
-    width: 264px;
+    width: 285px;
     margin: 5px 5px 0px 5px;
+    font-size: 20px;
+    margin-top: 5px;
 }
 
 input[name='check_code'] {
@@ -23,22 +27,46 @@ input[name='check_code'] {
 }
 
 .send_check_code {
-    width: 127px;
-    height: 25px;
     color: blue;
+    font-size: 18px;
+    width: 50%;
 }
 
 .submit {
     width: 132px;
     margin-left: 50%;
     transform: translate(-50%);
-    height: 25px;
-}
-
-legend {
-    color: red;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    font-size: 20px;
 }
 
 body {
     background-color: black;
+}
+
+.title {
+    background-color: blue;
+    color: red;
+    font-size: 25px;
+}
+
+.header {
+    width: 1080px;
+    font-size: 30px;
+    background-color: blue;
+    color: white;
+    margin: 0 auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+user {
+    color: pink;
+}
+
+bz {
+    color: black;
+    background-color: peachpuff;
+    float: right;
 }

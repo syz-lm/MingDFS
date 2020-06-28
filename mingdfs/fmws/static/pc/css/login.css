@@ -10,23 +10,59 @@
     transform: translate(-50%, -50%);
 
     border-color: blue;
+    border: solid 1px;
+    background-color: white;
+}
+
+.title {
+    background-color: blue;
+    color: red;
+    width: 100%;
+    font-size: 25px;
 }
 
 input {
-    width: 264px;
+    width: 250px;
     margin: 5px 5px 0px 5px;
+    font-size: 20px;
+    margin-top: 10px;
 }
 
 body {
     background-color: black;
 }
 
-legend {
-    color: red;
-}
-
 .bts {
-    margin-top: 5px;
+    width: fit-content;
+    width: -moz-fit-content;
+    margin-top: 10px;
     margin-left: 50%;
     transform: translate(-50%);
+    white-space: nowrap;
+    margin-bottom: 10px;
+}
+
+button {
+    font-size: 20px;
+    text-align: center;
+}
+
+.header {
+    width: 1080px;
+    font-size: 30px;
+    background-color: blue;
+    color: white;
+    margin: 0 auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+user {
+    color: pink;
+}
+
+bz {
+    color: black;
+    background-color: peachpuff;
+    float: right;
 }

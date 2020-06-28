@@ -8,6 +8,8 @@ import traceback
 import logging
 import io
 import time
+from decimal import Decimal
+import base64
 
 
 FILE_BP = Blueprint('file_bp', __name__)
@@ -136,7 +138,7 @@ def download():
         if host_name is None and port is None:
             return {"data": [], "status": 0}
         u = settings.FRWS_API_TEMPLATE['download']
-        method = u['method￿']
+        method = u['method']
         url = u['url'] % (host_name, port)
         params = {
             "user_id": user_id,
@@ -183,7 +185,8 @@ def delete():
             return {"data": [], "status": 0}
 
         u = settings.FRWS_API_TEMPLATE['delete']
-        method = u['method￿']
+
+        method = u['method']
         url = u['url'] % (host_name, port)
         form_data = {
             "user_id": user_id,
@@ -195,13 +198,14 @@ def delete():
         r = requests.request(method, url, data=form_data, headers={'Connection': 'close'})
         r.raise_for_status()
         if r.json()['status'] != 0:
-            file = File(MYSQL_POOL)
-            if not file.delete_file(user_id, third_user_id, title, category_id):
-                print('frws上的文件已经删除成功，但是数据库中没有删除成功', user_id, third_user_id, title, category_id)
+            if file.delete_file(user_id, third_user_id, title, category_id) is not True:
+                print(1)
+
                 return {"data": [], "status": 0}
             else:
                 return {"data": [], "status": 1}
         else:
+            print(1)
             return {"data": [], "status": 0}
 
 
@@ -246,7 +250,8 @@ def edit():
             return {"data": [], "status": 0}
 
         u = settings.FRWS_API_TEMPLATE['edit']
-        method = u['method￿']
+
+        method = u['method']
         url = u['url'] % (host_name, port)
         form_data = {
             "user_id": user_id,
@@ -274,3 +279,98 @@ def edit():
                 return {"data": [], "status": 1}
         else:
             return {"data": [], "status": 0}
+
+
+@FILE_BP.route('/page_files', methods=['POST'])
+def page_files():
+    """分页获取文件
+
+    POST 请求form表单 {"api_key": xxx, "page": xxx}
+        返回json 成功 {"data": [{
+                        "third_user_id": xxx,
+                        "title": xxx,
+                        "category_id": xxx,
+                        "add_time": xxx,
+                        "last_edit_time": xxx,
+                        "last_access_time": xxx,
+                        "file_size": xxx,
+                        "file_extension": xxx,
+                        "file_name": xxx
+                    }], "status": 1}
+                失败 {"data": [], "status": 0}
+
+    XXX: 就这直接返回数据有点不太好，这相当于暴露了数据库的设计方案，但是前端那里又能根据页面和数据字段
+    猜出，所以，隐藏也是不可能的，除非前端那里做闭源。所以，这是多虑了。
+    """
+    if request.method == 'POST':
+        api_key = request.form['api_key']
+        page = int(request.form['page'])
+
+        user = User(MYSQL_POOL)
+        user_id = user.get_user_id_by_api_key(api_key)
+        if user_id is None:
+            return {"data": [], "status": 0}
+
+        file = File(MYSQL_POOL)
+        files = file.page_files(user_id, page)
+        for f in files:
+            f['file_name'] = str(user_id) + '_' + f['third_user_id'] + '_' + base64.standard_b64encode(f['title'].encode()).decode() + \
+                         '_' + f['category_id'] + "." + f['file_extension']
+
+        return {"data": files, "status": 1}
+
+
+@FILE_BP.route("/all_file_size", methods=['POST'])
+def all_file_size():
+    """统计该用户所有的文件总大小
+
+    POST 请求form表单 {"api_key": xxx}
+        返回json 成功 {"data": [{"all_file_size": xxx}], "status": 1}
+                失败 {"data": [], "status": 0}
+    """
+    if request.method == 'POST':
+        try:
+            api_key = request.form['api_key']
+
+            user = User(MYSQL_POOL)
+            user_id = user.get_user_id_by_api_key(api_key)
+            if user_id is None:
+                return {"data": [], "status": 0}
+
+            file = File(MYSQL_POOL)
+            all_file_size: Decimal = file.all_file_size(user_id)
+
+            if all_file_size is not None:
+                return {"data": [{"all_file_size": int(all_file_size)}], "status": 1}
+            else:
+                return {"data": [], "status": 0}
+        except:
+            print(traceback.format_exc())
+
+
+@FILE_BP.route("/get_total_pages", methods=['POST'])
+def get_total_pages():
+    """统计该用户总页数
+
+    POST 请求form表单 {"api_key": xxx}
+        返回json 成功 {"data": [{"total_pages": xxx}], "status": 1}
+                失败 {"data": [], "status": 0}
+    """
+    if request.method == 'POST':
+        try:
+            api_key = request.form['api_key']
+
+            user = User(MYSQL_POOL)
+            user_id = user.get_user_id_by_api_key(api_key)
+            if user_id is None:
+                return {"data": [], "status": 0}
+
+            file = File(MYSQL_POOL)
+            total_pages = file.get_total_pages_by_user_id(user_id)
+
+            if total_pages is not None:
+                return {"data": [{"total_pages": total_pages}], "status": 1}
+            else:
+                return {"data": [], "status": 0}
+        except:
+            print(traceback.format_exc())
