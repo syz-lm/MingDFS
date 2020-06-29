@@ -193,6 +193,7 @@ def delete():
                         print('删除文件失败', save_file_name, str(e))
                         return {"data": [],  'status': 0}
 
+            print(1)
             return {"data": [], "status": 0}
         except:
             import traceback

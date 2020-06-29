@@ -214,8 +214,10 @@ class File(MySQLBase):
                     user_id = %s
                 limit %s, 25
                 """)
-        args = (user_id, page)
+        args = (user_id, page - 1)
+
         results = self.mysql_pool.query(sql, args)
+        print(sql, args, results)
         if results != None and len(results) != 0:
             return results
         else:
@@ -258,6 +260,15 @@ class File(MySQLBase):
         print(sql, args)
         affect_rows = self.mysql_pool.edit(sql, args)
         if affect_rows != 0:
+            return True
+        else:
+            return False
+
+    def edit_last_access_time(self, user_id, third_user_id, title, category_id, last_access_time):
+        sql = "update file set last_access_time = %s where user_id = %s and third_user_id = %s and title = %s and category_id = %s"
+        args = (last_access_time, user_id, third_user_id, title, category_id)
+        af = self.mysql_pool.edit(sql, args)
+        if af != 0:
             return True
         else:
             return False

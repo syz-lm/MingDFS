@@ -118,10 +118,10 @@ def download():
             失败 json {"data": [], "status": 0}
     """
     if request.method == 'GET':
-        api_key = request.form['api_key']
-        third_user_id = request.form['third_user_id']
-        title = request.form['title']
-        category_id = request.form['category_id']
+        api_key = request.args['api_key']
+        third_user_id = request.args['third_user_id']
+        title = request.args['title']
+        category_id = request.args['category_id']
 
         user = User(MYSQL_POOL)
         user_id = user.get_user_id_by_api_key(api_key)
@@ -152,6 +152,12 @@ def download():
         file_name = str(time.time())
         if file_extension != '':
             file_name = file_name + '.' + file_extension
+        if file.edit_last_access_time(user_id, third_user_id, title, category_id, int(time.time())) is False:
+            print('修改last_access_time失败', request.args)
+
+        # if file_extension.lower() in ["txt"]: 没有用
+        #     return send_file(io.BytesIO(r.content), attachment_filename=file_name, mimetype="Content-Type: text; charset=UTF-8")
+
         return send_file(io.BytesIO(r.content), attachment_filename=file_name)
 
 
@@ -199,7 +205,7 @@ def delete():
         r.raise_for_status()
         if r.json()['status'] != 0:
             if file.delete_file(user_id, third_user_id, title, category_id) is not True:
-                print(1)
+                print(1, user_id, third_user_id, title, category_id)
 
                 return {"data": [], "status": 0}
             else:

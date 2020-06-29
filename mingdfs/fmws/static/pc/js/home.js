@@ -74,6 +74,79 @@ $(".popu_menu > .layout > .cancel").click(function () {
     $(".popu_menu").hide();
 });
 
+$(".popu_menu > .layout > .download").click(function () {
+    var api_key = $(".api_key").html().trim();
+    var title = $(".yj_title").html().trim();
+    var category_id = $(".yj_category_id").html().trim();
+    var third_user_id = $(".yj_third_user_id").html().trim();
+    var file_extension = $(".yj_file_extension").html().trim();
+
+    var url = "/file/download?api_key=" + api_key + '&title=' + title + '&category_id=' + category_id +
+        '&third_user_id=' + third_user_id;
+
+    window.open(url);
+    $(".popu_menu").hide();
+});
+
+
+$(".popu_menu > .layout > .look").click(function () {
+    $(".look_panel > .layout").css({
+        position: "absolute",
+        width: "50%",
+        height: "50%",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)"
+    });
+    $(".look_panel").show();
+
+    var api_key = $(".api_key").html().trim();
+    var title = $(".yj_title").html().trim();
+    var category_id = $(".yj_category_id").html().trim();
+    var third_user_id = $(".yj_third_user_id").html().trim();
+    var file_extension = $(".yj_file_extension").html().trim();
+
+    $(".look_panel > .layout > .lp_header > .lp_title").html(title);
+    var url = "/file/download?api_key=" + api_key + '&title=' + title + '&category_id=' + category_id +
+        '&third_user_id=' + third_user_id;
+    $(".look_panel > .layout > .lp_content").attr("src", url);
+    $(".popu_menu").hide();
+
+    page_files();
+});
+
+$(".lp_max_windown").click(function () {
+    if ($(".lp_win_ts").html().trim() == "translate(-50%, -50%)") {
+        $(".look_panel > .layout").css({
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            left: "0",
+            top: "0",
+            transform: "translate(0, 0)"
+        });
+        $(".lp_win_ts").html("translate(0, 0)")
+    }
+    else {
+        $(".look_panel > .layout").css({
+            position: "absolute",
+            width: "50%",
+            height: "50%",
+            left: "50%",
+            top: "50%",
+            transform: "translate(-50%, -50%)"
+        });
+        $(".lp_win_ts").html("translate(-50%, -50%)")
+    }
+});
+
+$(".lp_close").click(function () {
+    $(".look_panel > .layout > .lp_header > .lp_title").html("");
+    $(".look_panel > .layout > .lp_content").attr("src", "about:blank");
+
+    $(".look_panel").hide();
+});
+
 $(".popu_menu > .layout > .re_name").click(function () {
     var file_name = $(".clicked_dom").attr("value");
 
@@ -167,6 +240,7 @@ $(".submit_upload").click(function () {
                 alert('上传成功');
                 all_file_size();
                 get_total_pages();
+                page_files();
             } else {
                 alert('上传失败');
             }
