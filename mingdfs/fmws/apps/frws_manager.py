@@ -59,4 +59,4 @@ def register_frws():
                 return {"data": [], "status": 0}
         else:
             apps.REDIS_CLI.hset(settings.CACHE_FRWS_COMPUTERS_KEY, host_name, port)
-            return {"data": [{"message": "该frws已经注册，不允许私自修改配置，很危险。"}], "status": 0}
+            return {"data": [{"message": "该frws已经注册，不允许私自修改配置，很危险。"}], "status": 1}

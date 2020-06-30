@@ -84,6 +84,7 @@ def _read_command_line(flags):
                               settings.FMWS_KEY, settings.FMWS_HOST_NAME, settings.FMWS_PORT,
                               json.dumps(settings.SAVE_DIRS), settings.FRWS_KEY):
             logging.error('注册服务器失败')
+            return
         else:
             logging.info('注册服务器成功')
 
