@@ -5,7 +5,7 @@ import argparse
 import logging
 import json
 import os
-from threading import Thread
+from multiprocessing import Process
 from mingdfs.fmws.stat_process import start_stat
 
 
@@ -85,12 +85,12 @@ def _read_command_line(flags, debug):
     apps.REDIS_CLI.set(settings.CACHE_STAT_INTERVAL_KEY, flags.STAT_INTERVAL)
     apps.init_app()
 
-    Thread(target=start_stat).start()
+    ss = Process(target=start_stat)
+    fs = Process(target=apps.start_fmws, args=(settings.HOST, settings.PORT))
     try:
-        if debug:
-            apps.debug(settings.HOST, settings.PORT)
-        else:
-            apps.start_fmws(settings.HOST, settings.PORT)
+        ss.start()
+        fs.start()
+        fs.join()
     except:
         pass
     finally:

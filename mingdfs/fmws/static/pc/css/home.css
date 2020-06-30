@@ -257,12 +257,13 @@ td:hover, th:hover {
 }
 
 .look_panel > .layout > .lp_header {
-    font-size: 25px;
+    font-size: 18px;
     background-color: blue;
     width: 100%;
     top: 0;
     left: 0;
     padding-bottom: 2px;
+    border: solid 1px blue;
 }
 
 .look_panel > .layout > .lp_header > myle {
@@ -296,7 +297,7 @@ myle > .lp_close {
     height: 100%;
     overflow: hidden;
     background-color: white;
-    border: none;
+    border: solid 1px blue;
 }
 
 .edit_panel {

@@ -25,9 +25,9 @@ def upload():
     """
     if request.method == 'POST':
         api_key = request.form['api_key']
-        third_user_id = request.form.get('third_user_id', '0');
+        third_user_id = request.form.get('third_user_id', '0')
         title = request.form['title']
-        category_id = request.form.get('category_id', '0');
+        category_id = request.form.get('category_id', '0')
 
         user = User(MYSQL_POOL)
         user_id = user.get_user_id_by_api_key(api_key)
@@ -134,20 +134,12 @@ def download():
             return {"data": [], "status": 0}
 
         file = File(MYSQL_POOL)
-        file_extension = file.get_file_extension(user_id, third_user_id, title, category_id)
-        if file_extension is None:
+        fhp = file.get_file_extension_host_name_port(user_id, third_user_id, title, category_id)
+        if fhp is None:
             return {"data": [], "status": 0}
-
-        file_id = file.get_file_id(user_id, third_user_id, title, category_id)
-        if file_id is None:
-            return {"data": [], "status": 0}
-
-        frws = FRWS(MYSQL_POOL)
-        hp = frws.get_host_name_port_by_file_id(file_id)
-        host_name = hp.get('host_name', None)
-        port = hp.get('port', None)
-        if host_name is None or port is None:
-            return {"data": [], "status": 0}
+        file_extension = fhp['file_extension']
+        host_name = fhp['host_name']
+        port = fhp['port']
 
         u = settings.FRWS_API_TEMPLATE['download']
         method = u['method']
@@ -164,11 +156,10 @@ def download():
         file_name = str(time.time())
         if file_extension != '':
             file_name = file_name + '.' + file_extension
+
+        # XXX: 这条sql可以考虑用file_id去优化
         if file.edit_last_access_time(user_id, third_user_id, title, category_id, int(time.time())) is False:
             print('修改last_access_time失败', request.args)
-
-        # if file_extension.lower() in ["txt"]: 没有用
-        #     return send_file(io.BytesIO(r.content), attachment_filename=file_name, mimetype="Content-Type: text; charset=UTF-8")
 
         return send_file(io.BytesIO(r.content), attachment_filename=file_name)
 
@@ -193,25 +184,12 @@ def delete():
             return {"data": [], "status": 0}
 
         file = File(MYSQL_POOL)
-        file_extension = file.get_file_extension(user_id, third_user_id, title, category_id)
-        if file_extension is None:
+        fhp = file.get_file_extension_host_name_port(user_id, third_user_id, title, category_id)
+        if fhp is None:
             return {"data": [], "status": 0}
-
-        file = File(MYSQL_POOL)
-        file_extension = file.get_file_extension(user_id, third_user_id, title, category_id)
-        if file_extension is None:
-            return {"data": [], "status": 0}
-
-        file_id = file.get_file_id(user_id, third_user_id, title, category_id)
-        if file_id is None:
-            return {"data": [], "status": 0}
-
-        frws = FRWS(MYSQL_POOL)
-        hp = frws.get_host_name_port_by_file_id(file_id)
-        host_name = hp.get('host_name', None)
-        port = hp.get('port', None)
-        if not (host_name or port):
-            return {"data": [], "status": 0}
+        file_extension = fhp['file_extension']
+        host_name = fhp['host_name']
+        port = fhp['port']
 
         u = settings.FRWS_API_TEMPLATE['delete']
 
@@ -292,23 +270,13 @@ def edit():
         save_path = None
         try:
             file = File(MYSQL_POOL)
-            file_extension = file.get_file_extension(user_id, src_third_user_id, src_title, src_category_id)
-            if file_extension is None:
+            fhp = file.get_frws_id_host_name_port(user_id, src_third_user_id, src_title, src_category_id)
+            if fhp is None:
                 return {"data": [], "status": 0}
 
-            file_id = file.get_file_id(user_id, src_third_user_id, src_title, src_category_id)
-            if file_id is None:
-                return {"data": [], "status": 0}
-
-            frws = FRWS(MYSQL_POOL)
-            hp = frws.get_host_name_port_by_file_id(file_id)
-            host_name = hp.get('host_name', None)
-            port = hp.get('port', None)
-
-            frws_id = frws.get_frws_id_by_host_name_port(host_name, port)
-
-            if not (host_name or port or frws_id is not None):
-                return {"data": [], "status": 0}
+            host_name = fhp['host_name']
+            port = fhp['port']
+            frws_id = fhp['frws_id']
 
             if my_file is None:
                 u = settings.FRWS_API_TEMPLATE['edit']

@@ -48,7 +48,7 @@ FRWS_API_TEMPLATE = {
         'url': 'http://%s:%d/file/download'
     },
     'edit': {
-        'method': 'edit',
+        'method': 'get',
         'url': 'http://%s:%d/file/edit'
     },
     'delete': {

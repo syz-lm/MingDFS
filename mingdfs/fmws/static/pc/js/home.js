@@ -172,47 +172,89 @@ $(".edit_panel > .layout > .ep_edit > .ep_submit").click(function () {
         return
     }
 
-    var form_data = new FormData();
-    form_data.append('api_key', api_key);
-    form_data.append('src_third_user_id', third_user_id);
-    form_data.append('src_title', title);
-    form_data.append('src_category_id', category_id);
-    form_data.append('src_file_extension', file_extension);
-    form_data.append('new_third_user_id', new_third_user_id);
-    form_data.append('new_title', new_title);
-    form_data.append('new_category_id', new_category_id);
-    form_data.append('new_file_extension', new_file_extension);
-
     var files = $(".edit_panel > .layout > .ep_edit > input:nth-child(5)")[0].files;
     if (files.length != 0) {
+        var form_data = new FormData();
+        form_data.append('api_key', api_key);
+        form_data.append('src_third_user_id', third_user_id);
+        form_data.append('src_title', title);
+        form_data.append('src_category_id', category_id);
+        form_data.append('src_file_extension', file_extension);
+        form_data.append('new_third_user_id', new_third_user_id);
+        form_data.append('new_title', new_title);
+        form_data.append('new_category_id', new_category_id);
+        form_data.append('new_file_extension', new_file_extension);
         form_data.append('upload_file_name', files[0]);
+
+        $.ajax({
+            type: 'POST',
+            url: "/file/edit",
+            data: form_data,
+            cache: false,
+            contentType: false,
+            dataType: "json",
+            processData: false,
+            success: function (data) {
+                console.log(data.status);
+
+                if (data.status == 1) {
+                    alert('编辑成功');
+                    var current_page = parseInt($(".current_page").html());
+                    page_files(current_page);
+                    $(".edit_panel > .layout > .ep_edit > input").val("");
+                } else {
+                    alert('编辑失败');
+                    $(".edit_panel > .layout > .ep_edit > input").val("");
+                }
+            },
+            error: function(err) {
+                alert('网络错误');
+                $(".edit_panel > .layout > .ep_edit > input").val("");
+            },
+            async: true,
+            xhr: progress
+        });
     }
+    else {
+        var form_data = {
+            'api_key': api_key,
+            'src_third_user_id': third_user_id,
+            'src_title': title,
+            'src_category_id': category_id,
+            'src_file_extension': file_extension,
+            'new_third_user_id': new_third_user_id,
+            'new_title': new_title,
+            'new_category_id': new_category_id,
+            'new_file_extension': new_file_extension
+        };
 
-    $.ajax({
-        type: 'POST',
-        url: "/file/edit",
-        data: form_data,
-        cache: false,
-        contentType: false,
-        dataType: "json",
-        processData: false,
-        success: function (data) {
-            console.log(data.status);
+        $.ajax({
+            type: 'POST',
+            url: "/file/edit",
+            data: form_data,
+            cache: false,
+            contentType: "application/x-www-form-urlencoded",
+            dataType: "json",
+            success: function (data) {
+                console.log(data.status);
 
-            if (data.status == 1) {
-                alert('编辑成功');
-                var current_page = parseInt($(".current_page").html());
-                page_files(current_page);
-            } else {
-                alert('编辑失败');
-            }
-        },
-        error: function(err) {
-            alert('网络错误');
-        },
-        async: true,
-        xhr: progress
-    });
+                if (data.status == 1) {
+                    alert('编辑成功');
+                    var current_page = parseInt($(".current_page").html());
+                    page_files(current_page);
+                    $(".edit_panel > .layout > .ep_edit > input").val("");
+                } else {
+                    alert('编辑失败');
+                    $(".edit_panel > .layout > .ep_edit > input").val("");
+                }
+            },
+            error: function (err) {
+                alert('网络错误');
+                $(".edit_panel > .layout > .ep_edit > input").val("");
+            },
+            async: true,
+        });
+    }
 
     $(".edit_panel").hide();
 });

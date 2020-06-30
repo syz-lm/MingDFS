@@ -183,6 +183,15 @@ class File(MySQLBase):
         else:
             return None
 
+    def get_frws_id_host_name_port(self, user_id, third_user_id, title, category_id):
+        sql = 'select a.frws_id as frws_id, b.host_name as host_name, b.port as port from file a inner join frws b on a.frws_id = b.id where a.user_id = %s and a.third_user_id = %s and a.title = %s and category_id = %s'
+        args = (user_id, third_user_id, title, category_id)
+        results = self.mysql_pool.query(sql, args)
+        if results is not None and len(results) != 0:
+            return results[0]
+        else:
+            return None
+
     def get_total_pages_by_user_id(self, user_id):
         sql = 'select count(id) as count from file where user_id = %s'
         args = (user_id, )
@@ -232,6 +241,24 @@ class File(MySQLBase):
         results = self.mysql_pool.query(sql, args)
         if len(results) != 0:
             return results[0]['file_extension']
+        else:
+            return None
+
+    def get_file_extension_file_id(self, user_id, third_user_id, title, category_id):
+        sql = 'select file_extension, id from file where user_id = %s and third_user_id = %s and title = %s and category_id = %s'
+        args = (user_id, third_user_id, title, category_id)
+        results = self.mysql_pool.query(sql, args)
+        if len(results) != 0:
+            return results[0]
+        else:
+            return None
+
+    def get_file_extension_host_name_port(self, user_id, third_user_id, title, category_id):
+        sql = 'select a.file_extension as file_extension, b.host_name as host_name, b.port as port from file a inner join frws b on a.frws_id = b.id where a.user_id = %s and a.third_user_id = %s and a.title = %s and a.category_id = %s'
+        args = (user_id, third_user_id, title, category_id)
+        results = self.mysql_pool.query(sql, args)
+        if len(results) != 0:
+            return results[0]
         else:
             return None
 
