@@ -7,8 +7,8 @@ class Test(unittest.TestCase):
     def main(self, times):
         try:
             p = subprocess.Popen(["/usr/local/python3.8/bin/python3.8", command.__file__,
-                               '--HOST', '0.0.0.0', '--PORT', '15677', '--HOST_NAME', 'frws1',
-                               '--FMWS_HOST_NAME', 'fmws', '--FMWS_PORT', '15675',
+                               '--HOST', '0.0.0.0', '--PORT', '15677', '--HOST_NAME', 'frws0',
+                               '--FMWS_HOST_NAME', 'fmws0', '--FMWS_PORT', '15675',
                                '--FMWS_KEY', 'mm5201314', '--FRWS_KEY', 'mm5201314',
                                '--SAVE_DIRS', '/mnt/hgfs/mingdfs/frws', '/mnt/hgfs/mingdfs/frws1'], stdout=subprocess.PIPE)
             p.wait(timeout=times)
