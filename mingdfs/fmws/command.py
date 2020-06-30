@@ -5,7 +5,7 @@ import argparse
 import logging
 import json
 import os
-from multiprocessing import Process
+from threading import Thread
 from mingdfs.fmws.stat_process import start_stat
 
 
@@ -48,8 +48,8 @@ def main(log_level=logging.DEBUG, debug=False):
     parser.add_argument('--FMWS_CACHE', type=str, default='/mnt/hgfs/mingdfs/fmws_cache',
                         help='输入fmws缓冲区路径：默认，/mnt/hgfs/mingdfs/fmws_cache')
 
-    parser.add_argument('--STAT_INTERVAL', type=int, default=300,
-                        help='输入统计进程执行间隔：默认，300秒')
+    parser.add_argument('--STAT_INTERVAL', type=int, default=30,
+                        help='输入统计进程执行间隔：默认，30秒')
 
     flags = parser.parse_args()
     try:
@@ -85,22 +85,20 @@ def _read_command_line(flags, debug):
     apps.REDIS_CLI.set(settings.CACHE_STAT_INTERVAL_KEY, flags.STAT_INTERVAL)
     apps.init_app()
 
-    fmws_p = None
-    stat_p = Process(target=start_stat)
-
-    if not debug:
-        fmws_p = Process(target=apps.start_fmws, args=(settings.HOST, settings.PORT))
-    else:
-        fmws_p = Process(target=apps.debug, args=(settings.HOST, settings.PORT))
-
-    if fmws_p is not None:
-        stat_p.start()
-
-        fmws_p.daemon = True
-
-        fmws_p.start()
-        fmws_p.join()
-    raise
+    Thread(target=start_stat).start()
+    try:
+        if debug:
+            apps.debug(settings.HOST, settings.PORT)
+        else:
+            apps.start_fmws(settings.HOST, settings.PORT)
+    except:
+        pass
+    finally:
+        apps.REDIS_CLI.delete(settings.CACHE_FRWS_COMPUTERS_KEY)
+        apps.REDIS_CLI.delete(settings.CACHE_STAT_INTERVAL_KEY)
+        apps.REDIS_CLI.delete(settings.CACHE_FRWS_STAT_INFOR_KEY)
+        apps.MYSQL_POOL.release()
+        apps.REDIS_CLI.close()
 
 
 if __name__ == '__main__':

@@ -58,7 +58,7 @@
         <hidden class="clicked_dom" value=""></hidden>
         <div class="layout">
             <a class="look" href="#">查看</a><br>
-            <a class="re_name" href="#">重命名</a><br>
+            <a class="edit" href="#">编辑</a><br>
             <a class="download" href="#">下载</a><br>
             <a class="delete" href="#">删除</a><br>
             <a class="cancel" href="#">取消</a>
@@ -88,6 +88,24 @@
                 <myle><a class="lp_max_windown" href="#">□</a><a class="lp_close" href="#">关闭</a></myle>
             </div>
             <iframe onload="this.height = this.contentWindow.document.body.scrollHeight" class="lp_content" scrolling="yes" frameborder="1"></iframe>
+        </div>
+    </div>
+
+    <div class="edit_panel">
+        <div class="layout">
+            <div class="ep_title">
+                编辑文件对话框
+            </div>
+
+            <div class="ep_edit">
+                <input type="text" placeholder="请输入新的第三方用户id">
+                <input type="text" placeholder="请输入新的标题">
+                <input type="text" placeholder="请输入新的第三方分类id">
+                <input type="text" placeholder="请输入新的文件扩展名">
+                <input type="file" id="ep_upload_file_name" name="upload_file_name">
+                <button class="ep_submit">提交</button>
+                <button class="ep_cancel">取消</button>
+            </div>
         </div>
     </div>
 

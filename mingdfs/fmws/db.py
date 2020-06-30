@@ -19,24 +19,6 @@ class User(MySQLBase):
         email str
         passwd str
         last_login_time int
-
-    SQL:
-        注册
-        insert into user(user_name, money, api_key, register_time, email, passwd, last_login_time)
-                    value('xxx', 100, 'xxx', 15242342, 'xxx@xx.xx', 'xxx', 123123123)
-        登录
-        select id from user where user_name = %s and passwd = %s
-        API访问
-        select id from user where api_key = 'xxx'
-        修改密码
-        update user set passwd = 'xxx' where user_name = 'xxx' and email = 'xxx@xx.xx'
-        充值
-        select money from user where user_name = 'xxx' and passwd = 'xxx'
-        update user set money = 12312 where user_name = 'xxx' and passwd = 'xxx'
-        根据api_key查user_id
-        select id from user where api_key = 'xxx'
-        根据user_id获取用户名
-        select user_name from user where id = %s
     """
     def get_user_name_by_user_id(self, user_id):
         sql = 'select user_name from user where id = %s'
@@ -121,6 +103,58 @@ class User(MySQLBase):
                 return False
 
 
+class FRWS(MySQLBase):
+    """
+    Table Name:
+        frws
+
+    Fields:
+        id int
+        host_name: str
+        ip: str
+        port: int
+        save_dirs: str
+        fmws_cache: str
+        fmws_key: str
+        frws_key: str
+    """
+    def exists(self, host_name, ip, port):
+        sql = 'select id from frws where host_name = %s and ip = %s and port = %s'
+        args = (host_name, ip, port)
+        results = self.mysql_pool.query(sql, args)
+        if results is not None and len(results) != 0:
+            return True
+        else:
+            return False
+
+    def add_frws(self, host_name, ip, port, save_dirs, fmws_key, frws_key):
+        sql = ("insert into frws(host_name, ip, port, save_dirs, fmws_key, frws_key) "
+               "values(%s, %s, %s, %s, %s, %s)")
+        args = (host_name, ip, port, save_dirs, fmws_key, frws_key)
+        an = self.mysql_pool.edit(sql, args)
+        if an > 0: return True
+        else: return False
+
+    def get_host_name_port_by_file_id(self, file_id):
+        sql = 'select host_name, port from frws where id = (select frws_id from file where id = %s)'
+        args = (file_id, )
+        results = self.mysql_pool.query(sql, args)
+        print('debug', results, args)
+        if results is not None and len(results) != 0:
+            return results[0]
+        else:
+            return {}
+
+    def get_frws_id_by_host_name_port(self, host_name, port):
+        sql = 'select id from frws where host_name = %s and port = %s'
+        args = (host_name, port)
+        results = self.mysql_pool.query(sql, args)
+        if results is not None and len(results) != 0:
+            return results[0]['id']
+        else:
+            return None
+
+
 class File(MySQLBase):
     """
     Table Name:
@@ -137,48 +171,18 @@ class File(MySQLBase):
         last_access_time int
         file_size int
         file_extension str
-
-    SQL:
-        上传文件
-        insert into file(user_id, title, category_id, add_time, last_edit_time, last_access_time, file_size, file_extension,
-                        third_user_id)
-                    value(xxx, 'xxx', xxx, 12412231, 12312, 1231231, 12312, 'xxx', xxx)
-        删除文件
-        delete from file
-            where user_id = xxx and title = 'xxx' and category_id = 'xxx' and third_user_id = xxx
-        修改文件(不修改文件内容)
-        update file set third_user_id = xxx, title = 'xxx', category_id = 'xxx', last_edit_time = xxx,
-                    file_extension = xxx
-            where user_id = xxx and third_user_id = xxx and category_id = xxx and title = 'xxx'
-        修改文件内容(先删除，再重新上传)
-        delete from file
-            where user_id = xxx and title = 'xxx' and category_id = 'xxx' and third_user_id = xxx
-        insert into file(user_id, title, category_id, add_time, last_edit_time, last_access_time, file_size, file_extension,
-                        third_user_id)
-                    value(xxx, 'xxx', xxx, 12412231, 12312, 1231231, 12312, 'xxx', xxx)
-        查询文件是否存在
-        select id from file where user_id = 'xxx' and third_user_id = 'xxx' and title = 'xxx' and category_id = 'xxx'
-        获取扩展名
-        select file_extension from file where user_id = %s and third_user_id = %s and title = %s and category_id = %s
-        分页获取文件
-        select
-            third_user_id,
-            title,
-            category_id,
-            add_time,
-            last_edit_time,
-            last_access_time,
-            file_size,
-            file_extension
-        from file
-        where
-            user_id = %s
-        limit %s, 25
-        统计该用户下的所有文件大小
-        select sum(file_size) as all_file_size form file where user_id = %s
-        获取该用户总页数
-        select count(id) from file where user_id = %s
+        frws_id int
     """
+
+    def get_file_id(self, user_id, third_user_id, title, category_id):
+        sql = 'select id from file where user_id = %s and third_user_id = %s and title = %s and category_id = %s'
+        args = (user_id, third_user_id, title, category_id)
+        results = self.mysql_pool.query(sql, args)
+        if results is not None and len(results) != 0:
+            return results[0]['id']
+        else:
+            return None
+
     def get_total_pages_by_user_id(self, user_id):
         sql = 'select count(id) as count from file where user_id = %s'
         args = (user_id, )
@@ -217,7 +221,6 @@ class File(MySQLBase):
         args = (user_id, page - 1)
 
         results = self.mysql_pool.query(sql, args)
-        print(sql, args, results)
         if results != None and len(results) != 0:
             return results
         else:
@@ -242,12 +245,12 @@ class File(MySQLBase):
             return False
 
     def upload_file(self, user_id, title, category_id, add_time, last_edit_time, last_access_time, file_size, file_extension,
-                    third_user_id):
+                    third_user_id, frws_id):
         sql = ("insert into file(user_id, title, category_id, add_time, last_edit_time, last_access_time, file_size, file_extension,"
-               "third_user_id)"
-               "value(%s, %s, %s, %s, %s, %s, %s, %s, %s)")
+               "third_user_id, frws_id)"
+               "value(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
         args = (user_id, title, category_id, add_time, last_edit_time, last_access_time, file_size, file_extension,
-                third_user_id)
+                third_user_id, frws_id)
         affect_rows = self.mysql_pool.edit(sql, args)
         if affect_rows != 0:
             return True
@@ -276,13 +279,13 @@ class File(MySQLBase):
     def edit_file(self, user_id, src_third_user_id, new_third_user_id,
                   src_title, new_title, src_category_id, new_category_id,
                   last_edit_time,
-                  src_file_extension, new_file_extension):
+                  src_file_extension, new_file_extension, frws_id):
         sql = ("update file set third_user_id = %s, title = %s, category_id = %s, last_edit_time = %s,"
-               "file_extension = %s"
+               "file_extension = %s, frws_id = %s "
                "where user_id = %s and third_user_id = %s and category_id = %s and title = %s"
                " and file_extension = %s")
         args = (new_third_user_id, new_title, new_category_id, last_edit_time, new_file_extension,
-                user_id, src_third_user_id, src_category_id, src_title, src_file_extension)
+                frws_id, user_id, src_third_user_id, src_category_id, src_title, src_file_extension)
         affect_rows = self.mysql_pool.edit(sql, args)
         if affect_rows != 0:
             return True
@@ -300,6 +303,7 @@ class RediOP:
             return {"data": [], "status": 0}
         logging.debug('stat_infor: %s', stat_infor)
         stat_infor = json.loads(stat_infor.decode())
+        print("stat_infor", stat_infor)
         best_frws = stat_infor[settings.CACHE_STAT_BEST_FRWS_KEY]
 
         host_name = None

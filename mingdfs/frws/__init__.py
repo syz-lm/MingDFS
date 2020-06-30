@@ -43,29 +43,13 @@ def start_frws(host, port):
             logging.error(traceback.format_exc())
 
 
-def register_frws(host_name, ip, port, fmws_key, fmws_host_name, fmws_port):
-    """注册frws服务
-
-    :param host_name: fmws在hosts文件中对应的frws的名字
-    :type host_name: str
-    :param ip: frws外网地址
-    :type ip: str
-    :param port: frws运行端口
-    :type port: int
-    :param fmws_key: 访问fmws服务器的key
-    :type fmws_key: str
-    :param fmws_host_name: fmws服务器ip
-    :type fmws_host_name: str
-    :param fmws_port: fmws服务器端口
-    :type fmws_port: int
-
-    :return: 1 为成功，0 为失败
-    :rtype: int
-    """
+def register_frws(host_name, ip, port, fmws_key, fmws_host_name, fmws_port, save_dirs, frws_key):
     form_data = {
         "host_name": host_name,
         "ip": ip,
         "port": port,
+        "save_dirs": save_dirs,
+        "frws_key": frws_key,
         "fmws_key": fmws_key
     }
     try:
@@ -73,6 +57,8 @@ def register_frws(host_name, ip, port, fmws_key, fmws_host_name, fmws_port):
 
         r = requests.get(api, data=form_data)
         r.raise_for_status()
+        print(r.json()['data'])
         return r.json()['status']
     except:
+        logging.error(traceback.format_exc())
         return 0

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, send_file
 from mingdfs.fmws import settings
 from mingdfs.fmws.apps import MYSQL_POOL, REDIS_CLI
-from mingdfs.fmws.db import User, File, RediOP
+from mingdfs.fmws.db import User, File, RediOP, FRWS
 import requests
 import os
 import traceback
@@ -47,7 +47,11 @@ def upload():
         else:
             redis_op = RediOP(REDIS_CLI)
             host_name, port = redis_op.get_best_frws_host_name_port()
-            if host_name is None or port is None:
+
+            frws = FRWS(MYSQL_POOL)
+            frws_id = frws.get_frws_id_by_host_name_port(host_name, port)
+
+            if host_name is None or port is None or frws_id is None:
                 return {"data": [], "status": 0}
 
             save_path = settings.FMWS_CACHE + os.path.sep + my_file.filename
@@ -83,8 +87,9 @@ def upload():
                     add_time = int(time.time())
                     last_edit_time = add_time
                     last_access_time = 0
+
                     if not file.upload_file(user_id, title, category_id, add_time, last_edit_time,
-                                            last_access_time, file_size, file_extension, third_user_id):
+                                            last_access_time, file_size, file_extension, third_user_id, frws_id):
                         return {"data": [], "status": 0}
                     else:
                         return {"data": [], "status": 1}
@@ -133,10 +138,17 @@ def download():
         if file_extension is None:
             return {"data": [], "status": 0}
 
-        redis_op = RediOP(REDIS_CLI)
-        host_name, port = redis_op.get_best_frws_host_name_port()
-        if host_name is None and port is None:
+        file_id = file.get_file_id(user_id, third_user_id, title, category_id)
+        if file_id is None:
             return {"data": [], "status": 0}
+
+        frws = FRWS(MYSQL_POOL)
+        hp = frws.get_host_name_port_by_file_id(file_id)
+        host_name = hp.get('host_name', None)
+        port = hp.get('port', None)
+        if host_name is None or port is None:
+            return {"data": [], "status": 0}
+
         u = settings.FRWS_API_TEMPLATE['download']
         method = u['method']
         url = u['url'] % (host_name, port)
@@ -185,9 +197,20 @@ def delete():
         if file_extension is None:
             return {"data": [], "status": 0}
 
-        redis_op = RediOP(REDIS_CLI)
-        host_name, port = redis_op.get_best_frws_host_name_port()
-        if host_name is None and port is None:
+        file = File(MYSQL_POOL)
+        file_extension = file.get_file_extension(user_id, third_user_id, title, category_id)
+        if file_extension is None:
+            return {"data": [], "status": 0}
+
+        file_id = file.get_file_id(user_id, third_user_id, title, category_id)
+        if file_id is None:
+            return {"data": [], "status": 0}
+
+        frws = FRWS(MYSQL_POOL)
+        hp = frws.get_host_name_port_by_file_id(file_id)
+        host_name = hp.get('host_name', None)
+        port = hp.get('port', None)
+        if not (host_name or port):
             return {"data": [], "status": 0}
 
         u = settings.FRWS_API_TEMPLATE['delete']
@@ -249,16 +272,9 @@ def edit():
 
         file = File(MYSQL_POOL)
         src_file_extension = file.get_file_extension(user_id, src_third_user_id, src_title, src_category_id)
-
-        redis_op = RediOP(REDIS_CLI)
-        host_name, port = redis_op.get_best_frws_host_name_port()
-        if host_name is None and port is None:
+        if src_file_extension is None:
             return {"data": [], "status": 0}
 
-        u = settings.FRWS_API_TEMPLATE['edit']
-
-        method = u['method']
-        url = u['url'] % (host_name, port)
         form_data = {
             "user_id": user_id,
             "src_third_user_id": src_third_user_id,
@@ -270,21 +286,105 @@ def edit():
             "src_file_extension": src_file_extension,
             "new_file_extension": new_file_extension
         }
-        r = requests.request(method, url, data=form_data, headers={'Connection': 'close'})
-        r.raise_for_status()
-        if r.json()['status'] != 0:
+        my_file = request.files.get('upload_file_name', None)
+        r = None
+        f = None
+        save_path = None
+        try:
             file = File(MYSQL_POOL)
-            if not file.edit_file(user_id, src_third_user_id, new_third_user_id,
-                                  src_title, new_title, src_category_id, new_category_id,
-                                  int(time.time()), src_file_extension, new_file_extension):
-                print("frws文件已经修改成功，但是数据库中修改失败", user_id, src_third_user_id, new_third_user_id,
-                                  src_title, new_title, src_category_id, new_category_id,
-                                  int(time.time()), src_file_extension, new_file_extension)
+            file_extension = file.get_file_extension(user_id, src_third_user_id, src_title, src_category_id)
+            if file_extension is None:
                 return {"data": [], "status": 0}
+
+            file_id = file.get_file_id(user_id, src_third_user_id, src_title, src_category_id)
+            if file_id is None:
+                return {"data": [], "status": 0}
+
+            frws = FRWS(MYSQL_POOL)
+            hp = frws.get_host_name_port_by_file_id(file_id)
+            host_name = hp.get('host_name', None)
+            port = hp.get('port', None)
+
+            frws_id = frws.get_frws_id_by_host_name_port(host_name, port)
+
+            if not (host_name or port or frws_id is not None):
+                return {"data": [], "status": 0}
+
+            if my_file is None:
+                u = settings.FRWS_API_TEMPLATE['edit']
+                method = u['method']
+                url = u['url'] % (host_name, port)
+                r = requests.request(method, url, data=form_data, headers={'Connection': 'close'})
             else:
-                return {"data": [], "status": 1}
-        else:
+                redis_op = RediOP(REDIS_CLI)
+                host_name, port = redis_op.get_best_frws_host_name_port()
+                if host_name is None and port is None:
+                    return {"data": [], "status": 0}
+
+                save_path = settings.FMWS_CACHE + os.path.sep + my_file.filename
+
+                try:
+                    my_file.save(save_path)
+                except:
+                    print('文件缓存失败', form_data, save_path)
+                    return {"data": [], "status": 0}
+
+                f = open(save_path, 'rb')
+                files = {'upload_file_name': f}
+
+                u = settings.FRWS_API_TEMPLATE['upload']
+
+                method = u['method']
+                url = u['url'] % (host_name, port)
+                form_data = {
+                    'user_id': user_id,
+                    'third_user_id': new_third_user_id,
+                    'title': new_title,
+                    'category_id': new_category_id,
+                    'file_extension': new_file_extension,
+                    'file_size': os.path.getsize(save_path)
+                }
+                r = requests.request(method, url, data=form_data, files=files)
+                r.raise_for_status()
+                if r.json()['status'] == 0:
+                    return {"data": [], "status": 0}
+
+                u = settings.FRWS_API_TEMPLATE['delete']
+                method = u['method']
+                url = u['url'] % (host_name, port)
+                form_data = {
+                    'user_id': user_id,
+                    'third_user_id': src_third_user_id,
+                    'title': src_title,
+                    'category_id': src_category_id,
+                    'file_extension': src_file_extension
+                }
+                r = requests.request(method, url, data=form_data)
+
+            r.raise_for_status()
+            if r.json()['status'] != 0:
+                file = File(MYSQL_POOL)
+                if not file.edit_file(user_id, src_third_user_id, new_third_user_id,
+                                      src_title, new_title, src_category_id, new_category_id,
+                                      int(time.time()), src_file_extension, new_file_extension, frws_id):
+                    print("frws文件已经修改成功，但是数据库中修改失败", user_id, src_third_user_id, new_third_user_id,
+                                      src_title, new_title, src_category_id, new_category_id,
+                                      int(time.time()), src_file_extension, new_file_extension, host_name, port)
+                    return {"data": [], "status": 0}
+                else:
+                    return {"data": [], "status": 1}
+            else:
+                return {"data": [], "status": 0}
+        except:
+            logging.error(traceback.format_exc())
             return {"data": [], "status": 0}
+        finally:
+            if f: f.close()
+            if save_path:
+                try:
+                    os.remove(save_path)
+                except:
+                    print('文件删除失败', save_path)
 
 
 @FILE_BP.route('/page_files', methods=['POST'])

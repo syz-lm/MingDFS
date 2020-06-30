@@ -147,13 +147,79 @@ $(".lp_close").click(function () {
     $(".look_panel").hide();
 });
 
-$(".popu_menu > .layout > .re_name").click(function () {
+$(".popu_menu > .layout > .edit").click(function () {
     var file_name = $(".clicked_dom").attr("value");
 
-    // TODO
-    alert('敬请期待');
+    $(".edit_panel").show();
 
     $(".popu_menu").hide();
+});
+
+$(".edit_panel > .layout > .ep_edit > .ep_submit").click(function () {
+    var api_key = $(".api_key").html().trim();
+    var title = $(".yj_title").html().trim();
+    var category_id = $(".yj_category_id").html().trim();
+    var third_user_id = $(".yj_third_user_id").html().trim();
+    var file_extension = $(".yj_file_extension").html().trim();
+
+    var new_third_user_id = $(".edit_panel > .layout > .ep_edit > input:nth-child(1)").val().trim();
+    var new_title = $(".edit_panel > .layout > .ep_edit > input:nth-child(2)").val().trim();
+    var new_category_id = $(".edit_panel > .layout > .ep_edit > input:nth-child(3)").val().trim();
+    var new_file_extension = $(".edit_panel > .layout > .ep_edit > input:nth-child(4)").val().trim();
+
+    if (new_third_user_id == "" || new_title == "" || new_category_id == "" || new_file_extension == "") {
+        alert("表单不能为空");
+        return
+    }
+
+    var form_data = new FormData();
+    form_data.append('api_key', api_key);
+    form_data.append('src_third_user_id', third_user_id);
+    form_data.append('src_title', title);
+    form_data.append('src_category_id', category_id);
+    form_data.append('src_file_extension', file_extension);
+    form_data.append('new_third_user_id', new_third_user_id);
+    form_data.append('new_title', new_title);
+    form_data.append('new_category_id', new_category_id);
+    form_data.append('new_file_extension', new_file_extension);
+
+    var files = $(".edit_panel > .layout > .ep_edit > input:nth-child(5)")[0].files;
+    if (files.length != 0) {
+        form_data.append('upload_file_name', files[0]);
+    }
+
+    $.ajax({
+        type: 'POST',
+        url: "/file/edit",
+        data: form_data,
+        cache: false,
+        contentType: false,
+        dataType: "json",
+        processData: false,
+        success: function (data) {
+            console.log(data.status);
+
+            if (data.status == 1) {
+                alert('编辑成功');
+                var current_page = parseInt($(".current_page").html());
+                page_files(current_page);
+            } else {
+                alert('编辑失败');
+            }
+        },
+        error: function(err) {
+            alert('网络错误');
+        },
+        async: true,
+        xhr: progress
+    });
+
+    $(".edit_panel").hide();
+});
+
+$(".edit_panel > .layout > .ep_edit > .ep_cancel").click(function () {
+    $(".edit_panel > .layout > .ep_edit > input").val("");
+    $(".edit_panel").hide();
 });
 
 $(".popu_menu > .layout > .delete").click(function () {

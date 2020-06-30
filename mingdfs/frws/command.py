@@ -5,6 +5,7 @@ monkey.patch_all()
 import argparse
 import logging
 import os
+import json
 import time
 from mingdfs.frws import start_frws, register_frws
 from multiprocessing import Process
@@ -80,7 +81,8 @@ def _read_command_line(flags):
 
     def _hello():
         if 0 == register_frws(settings.HOST_NAME, settings.IP, settings.PORT,
-                              settings.FMWS_KEY, settings.FMWS_HOST_NAME, settings.FMWS_PORT):
+                              settings.FMWS_KEY, settings.FMWS_HOST_NAME, settings.FMWS_PORT,
+                              json.dumps(settings.SAVE_DIRS), settings.FRWS_KEY):
             logging.error('注册服务器失败')
         else:
             logging.info('注册服务器成功')
