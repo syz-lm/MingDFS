@@ -2,6 +2,8 @@ import platform
 import shutil
 import logging
 import os
+from Crypto.Cipher import AES
+from binascii import b2a_hex, a2b_hex
 
 PC = 1
 MOBILE = 2
@@ -65,3 +67,89 @@ def dump_hosts(ih: dict):
 
         with open(hosts, 'w') as f:
             f.write(content)
+
+
+my_crypt_number_dict = {
+    "1": "拟把疏狂图一醉，对酒当歌，强乐还无味。",
+    "2": "望极春愁，黯黯生天际。",
+    "3": "东风夜放花千树，更吹落，星如雨。",
+    "4": "雾失楼台，月迷津渡，桃源望断无寻处。",
+    "5": "锦壶催画箭，玉佩天涯远。",
+    "6": "细雨梦回鸡塞远，小楼吹彻玉笙寒。",
+    "7": "送春春去几时回。",
+    "8": "绿杨烟外晓寒轻，红杏枝头春意闹。",
+    "9": "栏干十二独凭春，晴碧远连云。",
+    "0": "几日行云何处去？忘却归来，不道春将莫。",
+    ".": "迟钝的我。",
+
+    "迟钝的我。": ".",
+    "几日行云何处去？忘却归来，不道春将莫。": "0",
+    "栏干十二独凭春，晴碧远连云。": "9",
+    "绿杨烟外晓寒轻，红杏枝头春意闹。": "8",
+    "送春春去几时回。": "7",
+    "细雨梦回鸡塞远，小楼吹彻玉笙寒。": "6",
+    "锦壶催画箭，玉佩天涯远。": "5",
+    "雾失楼台，月迷津渡，桃源望断无寻处。": "4",
+    "东风夜放花千树，更吹落，星如雨。": "3",
+    "望极春愁，黯黯生天际。": "2",
+    "拟把疏狂图一醉，对酒当歌，强乐还无味。": "1"
+}
+
+
+def crypt_number(num):
+    b = str(num)
+    c = list(b)
+    for i in range(len(c)):
+        c[i] = my_crypt_number_dict[c[i]]
+
+    return ''.join(c)
+
+def decrypt_number(msg):
+    b = msg.split('。')
+    for i in range(len(b) - 1):
+        if b[i] == "":
+            continue
+        b[i] = my_crypt_number_dict[b[i] + "。"]
+    return float(''.join(b))
+
+# 如果text不足16位的倍数就用空格补足为16位
+def add_to_16(text):
+    if len(text.encode('utf-8')) % 16:
+        add = 16 - (len(text.encode('utf-8')) % 16)
+    else:
+        add = 0
+    text = text + ('\0' * add)
+    return text.encode('utf-8')
+
+
+# 加密函数
+def encrypt(key, text):
+    key = key.encode('utf-8')
+    mode = AES.MODE_CBC
+    iv = b'qqqqqqqqqqqqqqqq'
+    text = add_to_16(text)
+    cryptos = AES.new(key, mode, iv)
+    cipher_text = cryptos.encrypt(text)
+    # 因为AES加密后的字符串不一定是ascii字符集的，输出保存可能存在问题，所以这里转为16进制字符串
+    return b2a_hex(cipher_text)
+
+
+# 解密后，去掉补足的空格用strip() 去掉
+def decrypt(key, text):
+    key = key.encode('utf-8')
+    iv = b'qqqqqqqqqqqqqqqq'
+    mode = AES.MODE_CBC
+    cryptos = AES.new(key, mode, iv)
+    plain_text = cryptos.decrypt(a2b_hex(text))
+    return bytes.decode(plain_text).rstrip('\0')
+
+
+if __name__ == '__main__':
+    key = '1234567890123456'
+    msg = encrypt(key, 'hello')
+    print(msg)
+    print(decrypt(key, msg))
+
+    en = crypt_number(123.4)
+    print(en)
+    print(decrypt_number(en))

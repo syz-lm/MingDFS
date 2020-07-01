@@ -10,6 +10,7 @@ import io
 import time
 from decimal import Decimal
 import base64
+from mingdfs.utils import crypt_number, encrypt, decrypt_number, decrypt
 
 
 FILE_BP = Blueprint('file_bp', __name__)
@@ -81,6 +82,7 @@ def upload():
                     'file_extension': file_extension,
                     'file_size': file_size
                 }
+
                 r = requests.request(method, url, data=form_data, files=files)
                 r.raise_for_status()
                 if r.json()['status'] != 0:

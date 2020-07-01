@@ -20,7 +20,8 @@ setup(
         "PyMySQL",
         "gevent",
         "psutil",
-        "requests"
+        "requests",
+        "pycrypto"
     ],
     entry_points = """
     [console_scripts]
