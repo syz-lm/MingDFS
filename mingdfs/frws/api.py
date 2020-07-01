@@ -42,8 +42,11 @@ def upload():
         file_extension = request.form['file_extension']
         file_size = int(request.form['file_size'])
 
-        save_file_name = str(user_id) + '_' + str(third_user_id) + '_' + base64.standard_b64encode(title.encode()).decode() + \
+        save_file_name = str(user_id) + '_' + str(third_user_id) + '_' + title + \
                          '_' + str(category_id)
+        save_file_name = base64.standard_b64encode(save_file_name.encode()).decode()
+        save_file_name = base64.standard_b64encode(save_file_name.encode()).decode()
+
         file = request.files['upload_file_name']
         upload_file_name = file.filename
         try:
@@ -92,8 +95,10 @@ def download():
         title = request.args.get('title')
         category_id = request.args.get("category_id")
         file_extension = request.args.get('file_extension')
-        file_name = str(user_id) + '_' + str(third_user_id) + '_' + base64.standard_b64encode(title.encode()).decode() + \
+        file_name = str(user_id) + '_' + str(third_user_id) + '_' + title + \
                     '_' + str(category_id)
+        file_name = base64.standard_b64encode(file_name.encode()).decode()
+        file_name = base64.standard_b64encode(file_name.encode()).decode()
         if file_extension != '':
             file_name = file_name + "." + file_extension
 
@@ -137,16 +142,22 @@ def edit():
 
         for save_dir in settings.SAVE_DIRS:
             src_save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(src_third_user_id) + '_' + \
-                                 base64.standard_b64encode(src_title.encode()).decode() + \
+                                 src_title + \
                                  '_' + str(src_category_id)
+            src_save_file_name = base64.standard_b64encode(src_save_file_name.encode()).decode()
+            src_save_file_name = base64.standard_b64encode(src_save_file_name.encode()).decode()
+
             if src_file_extension != '':
                 src_save_file_name = src_save_file_name + "." + src_file_extension
             if not os.path.exists(src_save_file_name):
                 continue
 
             new_save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(new_third_user_id) + '_' + \
-                                 base64.standard_b64encode(new_title.encode()).decode() + \
+                                 new_title + \
                                  '_' + str(new_category_id)
+            new_save_file_name = base64.standard_b64encode(new_save_file_name.encode()).decode()
+            new_save_file_name = base64.standard_b64encode(new_save_file_name.encode()).decode()
+
             if new_file_extension != '':
                 new_save_file_name = new_save_file_name + "." + new_file_extension
 
@@ -180,8 +191,10 @@ def delete():
             file_extension = request.form['file_extension']
 
             for save_dir in settings.SAVE_DIRS:
-                save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(third_user_id) + '_' + base64.standard_b64encode(title.encode()).decode() + \
+                save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(third_user_id) + '_' + title + \
                                  '_' + str(category_id)
+                save_file_name = base64.standard_b64encode(save_file_name.encode()).decode()
+                save_file_name = base64.standard_b64encode(save_file_name.encode()).decode()
                 if file_extension != '':
                     save_file_name = save_file_name + "." + file_extension
 

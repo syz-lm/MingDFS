@@ -264,32 +264,18 @@ td:hover, th:hover {
     left: 0;
     padding-bottom: 2px;
     border: solid 1px blue;
-}
-
-.look_panel > .layout > .lp_header > myle {
-    float: right;
-}
-
-myle > .lp_max_windown {
-    color: white;
-    margin-right: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
-    text-decoration: none;
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-
-myle > .lp_close {
-    background-color: white;
-    color: red;
-    text-decoration: none;
-    margin-right: 2px;
+    min-width: 500px;
 }
 
 .look_panel > .layout > .lp_header > .lp_title {
     background-color: blue;
     color: white;
+    display: block;
+    white-space: nowrap;
+    min-width: 500px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: crosshair;
 }
 
 .look_panel > .layout > .lp_content {
@@ -298,6 +284,8 @@ myle > .lp_close {
     overflow: hidden;
     background-color: white;
     border: solid 1px blue;
+    min-width: 500px;
+    margin-bottom: 0;
 }
 
 .edit_panel {

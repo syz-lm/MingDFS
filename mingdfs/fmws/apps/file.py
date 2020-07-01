@@ -137,12 +137,13 @@ def download():
             return {"data": [], "status": 0}
 
         file = File(MYSQL_POOL)
-        fhp = file.get_file_extension_host_name_port(user_id, third_user_id, title, category_id)
+        fhp = file.get_file_extension_host_name_port_file_size(user_id, third_user_id, title, category_id)
         if fhp is None:
             return {"data": [], "status": 0}
         file_extension = fhp['file_extension']
         host_name = fhp['host_name']
         port = fhp['port']
+        file_size = fhp['file_size']
 
         u = settings.FRWS_API_TEMPLATE['download']
         method = u['method']
@@ -173,7 +174,16 @@ def download():
 
         # return send_file(io.BytesIO(r.content), attachment_filename=file_name)
         mimetype = guess_type(file_name)[0] or "application/octet-stream"
-        return Response(gen(r), mimetype=mimetype)
+        res = Response(gen(r), mimetype=mimetype)
+
+        # X: 这里解决video标签不能拖动的问题。
+        res.headers['Content-Length'] = file_size
+        res.headers['Accept-Ranges'] = 'bytes'
+        range = request.headers.get('Range', None)
+        if range is not None:
+            res.headers['Content-Range'] = range + str(file_size - 1)
+        # x: end
+        return res
 
 
 @FILE_BP.route('/delete', methods=['POST'])
@@ -400,8 +410,13 @@ def page_files():
         file = File(MYSQL_POOL)
         files = file.page_files(user_id, page)
         for f in files:
-            f['file_name'] = str(user_id) + '_' + f['third_user_id'] + '_' + base64.standard_b64encode(f['title'].encode()).decode() + \
-                         '_' + f['category_id'] + "." + f['file_extension']
+            f['file_name'] = str(user_id) + '_' + f['third_user_id'] + '_' + f['title'] + \
+                         '_' + f['category_id']
+            f['file_name'] = base64.standard_b64encode(f['file_name'].encode()).decode()
+            f['file_name'] = base64.standard_b64encode(f['file_name'].encode()).decode()
+
+            if f['file_extension'] != '':
+                f['file_name'] = f['file_name'] + "." + f['file_extension']
 
         return {"data": files, "status": 1}
 

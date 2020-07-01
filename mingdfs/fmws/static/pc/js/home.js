@@ -115,7 +115,7 @@ $(".popu_menu > .layout > .look").click(function () {
     page_files();
 });
 
-$(".lp_max_windown").click(function () {
+$(".lp_title").click(function () {
     if ($(".lp_win_ts").html().trim() == "translate(-50%, -50%)") {
         $(".look_panel > .layout").css({
             position: "absolute",
@@ -140,7 +140,7 @@ $(".lp_max_windown").click(function () {
     }
 });
 
-$(".lp_close").click(function () {
+$(".lp_title").contextmenu(function () {
     $(".look_panel > .layout > .lp_header > .lp_title").html("");
     $(".look_panel > .layout > .lp_content").attr("src", "about:blank");
 

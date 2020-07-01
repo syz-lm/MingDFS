@@ -262,6 +262,15 @@ class File(MySQLBase):
         else:
             return None
 
+    def get_file_extension_host_name_port_file_size(self, user_id, third_user_id, title, category_id):
+        sql = 'select a.file_extension as file_extension, b.host_name as host_name, b.port as port, a.file_size as file_size from file a inner join frws b on a.frws_id = b.id where a.user_id = %s and a.third_user_id = %s and a.title = %s and a.category_id = %s'
+        args = (user_id, third_user_id, title, category_id)
+        results = self.mysql_pool.query(sql, args)
+        if len(results) != 0:
+            return results[0]
+        else:
+            return None
+
     def exists(self, user_id, third_user_id, title, category_id):
         sql = 'select id from file where user_id = %s and third_user_id = %s and title = %s and category_id = %s'
         args = (user_id, third_user_id, title, category_id)
