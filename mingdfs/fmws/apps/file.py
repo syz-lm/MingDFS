@@ -1,4 +1,5 @@
-from flask import Blueprint, request, send_file
+from flask import Blueprint, request, send_file, Response
+from mimetypes import guess_type
 from mingdfs.fmws import settings
 from mingdfs.fmws.apps import MYSQL_POOL, REDIS_CLI
 from mingdfs.fmws.db import User, File, RediOP, FRWS
@@ -153,7 +154,7 @@ def download():
             "category_id": category_id,
             "file_extension": file_extension
         }
-        r = requests.request(method, url, params=params, headers={'Connection': 'close'})
+        r = requests.request(method, url, params=params, stream=True)
         r.raise_for_status()
         file_name = str(time.time())
         if file_extension != '':
@@ -163,7 +164,16 @@ def download():
         if file.edit_last_access_time(user_id, third_user_id, title, category_id, int(time.time())) is False:
             print('修改last_access_time失败', request.args)
 
-        return send_file(io.BytesIO(r.content), attachment_filename=file_name)
+        def gen(r):
+            size = 1024 * 1024 * 2
+            for chunk in r.iter_content(size):
+                yield chunk
+
+            r.close()
+
+        # return send_file(io.BytesIO(r.content), attachment_filename=file_name)
+        mimetype = guess_type(file_name)[0] or "application/octet-stream"
+        return Response(gen(r), mimetype=mimetype)
 
 
 @FILE_BP.route('/delete', methods=['POST'])
