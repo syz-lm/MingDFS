@@ -101,15 +101,21 @@ def _read_command_line(flags):
 
     if flags.PROCESS_TYPE == 0:
         try:
-            # start_frws(settings.HOST, settings.PORT)
-            debug(settings.HOST, settings.PORT)
+            start_frws(settings.HOST, settings.PORT)
+            # debug(settings.HOST, settings.PORT)
         except:
             pass
         finally:
             from mingdfs.frws import REDIS_CLI
             if REDIS_CLI: REDIS_CLI.close()
     else:
-        _hello()
+        import time
+        while 1:
+            try:
+                _hello()
+            except:
+                pass
+            time.sleep(30)
 
 
 if __name__ == '__main__':

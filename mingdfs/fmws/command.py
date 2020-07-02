@@ -23,7 +23,7 @@ def main(log_level=logging.DEBUG):
 
     parser.add_argument('--MAIL_CONFIG', type=json.loads, default='{"host": "smtp.qq.com", "port": 465, "username": "858556393@qq.com", "password": "hacnvlxplaqkbbhj", "forget_password_msg": "[XXX: MingDFS] 您的验证码: %d"}',
                         help=('输入mail配置：默认，'
-                              '{"host": "smtp.qq.com", "port": 465, "username": "858556393@qq.com", "password": "hacnvlxplaqkbbhj", "forget_password_msg": "[XXX: MingDFS] 您的验证码: %d"}'))
+                              '{"host": "smtp.qq.com", "port": 465, "username": "858556393@qq.com", "password": "hacnvlxplaqkbbhj", "forget_password_msg": "[XXX: MingDFS] 您的验证码: 替换验证码"}'))
 
     parser.add_argument('--REDIS_CONFIG', type=json.loads, default='{"host": "serv_pro", "port": 6379, "db": 0, "passwd": "mm5201314"}',
                         help=('输入redis配置：默认，'
@@ -50,7 +50,8 @@ def main(log_level=logging.DEBUG):
     parser.add_argument('--STAT_INTERVAL', type=int, default=30,
                         help='输入统计进程执行间隔：默认，30秒')
 
-    parser.add_argument('--PROCESS_TYPE', type=int, default=0, help='输入启动的进程类别: 0: fmws, 1: stat_process')
+    parser.add_argument('--PROCESS_TYPE', type=int, default=0,
+                        help='输入启动的进程类别: 0: fmws, 1: stat_process')
 
     flags = parser.parse_args()
     try:
@@ -87,8 +88,8 @@ def _read_command_line(flags):
         apps.init_app()
 
         try:
-            # apps.start_fmws(settings.HOST, settings.PORT)
-            apps.debug(settings.HOST, settings.PORT)
+            apps.start_fmws(settings.HOST, settings.PORT)
+            # apps.debug(settings.HOST, settings.PORT)
         finally:
             apps.MYSQL_POOL.release()
             apps.REDIS_CLI.close()
