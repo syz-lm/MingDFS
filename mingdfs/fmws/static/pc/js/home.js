@@ -107,13 +107,39 @@ $(".popu_menu > .layout > .look").click(function () {
     var file_extension = $(".yj_file_extension").html().trim();
 
     $(".look_panel > .layout > .lp_header > .lp_title").html(title);
-    var url = "/file/download?api_key=" + api_key + '&title=' + title + '&category_id=' + category_id +
-        '&third_user_id=' + third_user_id;
-    $(".look_panel > .layout > .lp_content").attr("src", url);
-    $(".popu_menu").hide();
 
-    page_files();
+    $.ajax({
+        type: 'GET',
+        url: "/file/download",
+        data: {
+            'api_key': api_key,
+            'third_user_id': third_user_id,
+            'title': title,
+            'category_id': category_id
+        },
+        cache: false,
+        contentType: "application/x-www-form-urlencoded",
+        dataType: "json",
+        success: function (data) {
+            console.log(data.status);
+
+            if (data.status == 1) {
+                var url = data.data[0]['url'];
+                $(".look_panel > .layout > .lp_content").attr("src", url);
+                $(".popu_menu").hide();
+
+                page_files();
+            } else {
+                alert('获取失败');
+            }
+        },
+        error: function(err) {
+            alert('网络错误');
+        },
+        async: true,
+    });
 });
+
 
 $(".lp_title").click(function () {
     if ($(".lp_win_ts").html().trim() == "translate(-50%, -50%)") {

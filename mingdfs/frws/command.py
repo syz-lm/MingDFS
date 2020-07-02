@@ -6,9 +6,7 @@ import argparse
 import logging
 import os
 import json
-import time
-from mingdfs.frws import start_frws, register_frws
-from multiprocessing import Process
+from mingdfs.frws import start_frws, register_frws, debug
 
 
 def main(log_level=logging.DEBUG):
@@ -44,6 +42,16 @@ def main(log_level=logging.DEBUG):
     from mingdfs.frws import settings
     parser.add_argument('--SAVE_DIRS', type=str, nargs='+', default=settings.SAVE_DIRS, help='输入服务器存储路径列表：默认，%s' % settings.SAVE_DIRS)
 
+    parser.add_argument('--REDIS_CONFIG', type=json.loads,
+                        default='{"host": "serv_pro", "port": 6379, "db": 0, "passwd": "mm5201314"}',
+                        help=('输入redis配置：默认，'
+                              '{"host": "serv_pro", "port": 6379, "db": 0, "passwd": "mm5201314"}'))
+
+    parser.add_argument('--SECRET_KEY', type=str, default='mm5201314',
+                        help='输入SESSION盐值：默认，mm5201314')
+
+    parser.add_argument('--PROCESS_TYPE', type=int, default=0, help='输入进程类型：0: frws, 1: register_frws')
+
     flags = parser.parse_args()
     try:
         _read_command_line(flags)
@@ -67,9 +75,12 @@ def _read_command_line(flags):
 
     settings.SAVE_DIRS = flags.SAVE_DIRS
 
-    logging.debug('HOST: %s, IP: %s, PORT: %s, HOST_NAME: %s, FMWS_HOST_NAME: %s, FMWS_PORT: %s, FMWS_KEY: %s, FRWS_KEY: %s, SAVE_DIRS: %s',
+    settings.REDIS_CONFIG = flags.REDIS_CONFIG
+    settings.SECRET_KEY = flags.SECRET_KEY
+
+    logging.debug('HOST: %s, IP: %s, PORT: %s, HOST_NAME: %s, FMWS_HOST_NAME: %s, FMWS_PORT: %s, FMWS_KEY: %s, FRWS_KEY: %s, SAVE_DIRS: %s, REDIS_CONFIG: %s, SECRET_KEY: %s',
                   settings.HOST, settings.IP, settings.PORT, settings.HOST_NAME, settings.FMWS_HOST_NAME, settings.FMWS_PORT, settings.FMWS_KEY,
-                  settings.FRWS_KEY, settings.SAVE_DIRS)
+                  settings.FRWS_KEY, settings.SAVE_DIRS, str(settings.REDIS_CONFIG), settings.SECRET_KEY)
 
     if len(settings.SAVE_DIRS) == 0:
         logging.error('存储磁盘不能为空')
@@ -88,17 +99,17 @@ def _read_command_line(flags):
         else:
             logging.info('注册服务器成功')
 
-    check_p = Process(target=_hello)
-
-    frws_p = Process(target=start_frws, args=(settings.HOST, settings.PORT))
-
-    frws_p.daemon = True
-    frws_p.start()
-
-    time.sleep(5)
-    check_p.start()
-
-    frws_p.join()
+    if flags.PROCESS_TYPE == 0:
+        try:
+            # start_frws(settings.HOST, settings.PORT)
+            debug(settings.HOST, settings.PORT)
+        except:
+            pass
+        finally:
+            from mingdfs.frws import REDIS_CLI
+            if REDIS_CLI: REDIS_CLI.close()
+    else:
+        _hello()
 
 
 if __name__ == '__main__':

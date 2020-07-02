@@ -40,19 +40,19 @@ FMWS_CACHE = '/mnt/hgfs/mingdfs/fmws_cache'
 
 FRWS_API_TEMPLATE = {
     'upload': {
-        'method': 'get',
+        'method': 'post',
         'url': 'http://%s:%d/file/upload'
     },
     'download': {
-        'method': 'get',
+        'method': 'post',
         'url': 'http://%s:%d/file/download'
     },
     'edit': {
-        'method': 'get',
+        'method': 'post',
         'url': 'http://%s:%d/file/edit'
     },
     'delete': {
-        'method': 'get',
+        'method': 'post',
         'url': 'http://%s:%d/file/delete'
     },
     'stat': {

@@ -11,3 +11,12 @@ SAVE_DIRS = [
 
 FMWS_KEY = 'mm5201314'
 FRWS_KEY = 'mm5201314'
+
+REDIS_CONFIG = {
+    "host": 'serv_pro',
+    "port": 6379,
+    "db": 0,
+    "passwd": 'mm5201314'
+}
+
+SECRET_KEY = 'mm5201314'

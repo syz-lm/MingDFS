@@ -130,6 +130,7 @@ class FRWS(MySQLBase):
     def add_frws(self, host_name, ip, port, save_dirs, fmws_key, frws_key):
         sql = ("insert into frws(host_name, ip, port, save_dirs, fmws_key, frws_key) "
                "values(%s, %s, %s, %s, %s, %s)")
+
         args = (host_name, ip, port, save_dirs, fmws_key, frws_key)
         an = self.mysql_pool.edit(sql, args)
         if an > 0: return True
@@ -256,6 +257,16 @@ class File(MySQLBase):
     def get_file_extension_host_name_port(self, user_id, third_user_id, title, category_id):
         sql = 'select a.file_extension as file_extension, b.host_name as host_name, b.port as port from file a inner join frws b on a.frws_id = b.id where a.user_id = %s and a.third_user_id = %s and a.title = %s and a.category_id = %s'
         args = (user_id, third_user_id, title, category_id)
+        results = self.mysql_pool.query(sql, args)
+        if len(results) != 0:
+            return results[0]
+        else:
+            return None
+
+    def get_file_extension_host_name_port_ip(self, user_id, third_user_id, title, category_id):
+        sql = 'select a.file_extension as file_extension, b.host_name as host_name, b.port as port, b.ip as ip from file a inner join frws b on a.frws_id = b.id where a.user_id = %s and a.third_user_id = %s and a.title = %s and a.category_id = %s'
+        args = (user_id, third_user_id, title, category_id)
+        print(sql % args)
         results = self.mysql_pool.query(sql, args)
         if len(results) != 0:
             return results[0]

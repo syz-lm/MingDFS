@@ -71,29 +71,39 @@ def _update_cache(stat_infor):
     REDIS_CLI.set(settings.CACHE_FRWS_STAT_INFOR_KEY, json.dumps(stat_infor))
 
 
-def start_stat():
-    while 1:
-        ts = []
-        stats = dict()
-        frws_computers = dict()
-        try:
-            frws_computers = REDIS_CLI.hgetall(settings.CACHE_FRWS_COMPUTERS_KEY)
-        except:
-            logging.error(traceback.format_exc())
+def start_stat(stat_interval):
+    try:
+        REDIS_CLI.set(settings.CACHE_STAT_INTERVAL_KEY, stat_interval)
 
-        for host_name, port in frws_computers.items():
-            t = Thread(target=_fetch_request, args=(host_name.decode(), int(port.decode()), stats))
-            ts.append(t)
-            t.start()
+        while 1:
+            ts = []
+            stats = dict()
+            frws_computers = dict()
+            try:
+                frws_computers = REDIS_CLI.hgetall(settings.CACHE_FRWS_COMPUTERS_KEY)
+            except:
+                logging.error(traceback.format_exc())
 
-        for t in ts: t.join()
-        try:
-            stat_infor = _sort_stat(stats)
-            _update_cache(stat_infor)
+            for host_name, port in frws_computers.items():
+                t = Thread(target=_fetch_request, args=(host_name.decode(), int(port.decode()), stats))
+                ts.append(t)
+                t.start()
 
-            stat_interval = int(REDIS_CLI.get(settings.CACHE_STAT_INTERVAL_KEY).decode())
-            logging.debug('stat_interval: \n%d', stat_interval)
-            time.sleep(stat_interval)
-        except:
-            logging.error(traceback.format_exc())
-            time.sleep(60)
+            for t in ts: t.join()
+            try:
+                stat_infor = _sort_stat(stats)
+                _update_cache(stat_infor)
+
+                stat_interval = int(REDIS_CLI.get(settings.CACHE_STAT_INTERVAL_KEY).decode())
+                logging.debug('stat_interval: \n%d', stat_interval)
+                time.sleep(stat_interval)
+            except:
+                logging.error(traceback.format_exc())
+                time.sleep(60)
+    except:
+        pass
+    finally:
+        REDIS_CLI.delete(settings.CACHE_FRWS_COMPUTERS_KEY)
+        REDIS_CLI.delete(settings.CACHE_STAT_INTERVAL_KEY)
+        REDIS_CLI.delete(settings.CACHE_FRWS_STAT_INFOR_KEY)
+        REDIS_CLI.close()

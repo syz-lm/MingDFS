@@ -34,9 +34,6 @@ def register_frws():
         if fmws_key != settings.FMWS_KEY:
             return {"data": [], "status": 0}
 
-        if request.remote_addr != ip:
-            return {"data": [], "status": 0}
-
         hello_api = 'http://%s:%s/hello' % (ip, port)
         try:
             r = requests.get(hello_api, data={"frws_key": settings.FRWS_KEY})
@@ -50,6 +47,7 @@ def register_frws():
         if frws.exists(host_name, ip, port) is False:
             if frws.add_frws(host_name, ip, port, save_dirs, fmws_key, frws_key) is True:
                 ih = load_hosts()
+                ih[ip] = set()
                 ih[ip].add(host_name)
                 dump_hosts(ih)
 

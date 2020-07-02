@@ -49,7 +49,7 @@ APP = Flask(__name__, static_folder=settings.STATIC_FOLDER,
             template_folder=settings.TEMPLATES_FOLDER)
 
 def init_app():
-    global APP
+    global APP, REDIS_CLI
     APP.config.from_mapping(
         SECRET_KEY=settings.SECRET_KEY,
         SEND_FILE_MAX_AGE_DEFAULT=timedelta(seconds=1),
@@ -119,7 +119,7 @@ def debug(host, port):
     global APP
     _init_bp()
 
-    APP.run(host=host, port=port, debug=True)
+    APP.run(host=host, port=port)
 
 
 if __name__ == '__main__':

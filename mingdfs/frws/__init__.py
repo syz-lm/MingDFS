@@ -4,6 +4,13 @@ import logging
 import traceback
 from flask import Flask
 import requests
+from redis import StrictRedis
+from flask_session import Session
+from datetime import timedelta
+from mingdfs.frws import settings
+
+
+REDIS_CLI: StrictRedis = None
 
 # 设置FLASK
 APP = Flask(__name__)
@@ -18,20 +25,20 @@ APP.register_blueprint(FILE_BP, url_prefix="/file")
 # 设置日志
 logging.basicConfig(level=logging.DEBUG)
 
+def init_redis_cli():
+    global REDIS_CLI
+    REDIS_CLI = StrictRedis(host=settings.REDIS_CONFIG['host'],
+                            port=settings.REDIS_CONFIG['port'],
+                            db=settings.REDIS_CONFIG['db'],
+                            password=settings.REDIS_CONFIG['passwd'],
+                            socket_timeout=60,
+                            socket_connect_timeout=60,
+                            socket_keepalive=True)
 
 def start_frws(host, port):
-    """启动frws服务
-
-    :param host: 运行地址
-    :type host: str
-    :param port: 运行端口
-    :type port: int
-
-    :return: None
-    :rtype: None
-    """
     global APP
     try:
+        init_redis_cli()
         http_server = WSGIServer((host, port), APP)
         http_server.serve_forever()
     except Exception as e:
@@ -41,6 +48,11 @@ def start_frws(host, port):
             http_server.close()
         except:
             logging.error(traceback.format_exc())
+
+def debug(host, port):
+    global APP
+    init_redis_cli()
+    APP.run(host, port)
 
 
 def register_frws(host_name, ip, port, fmws_key, fmws_host_name, fmws_port, save_dirs, frws_key):

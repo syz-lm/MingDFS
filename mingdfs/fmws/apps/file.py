@@ -7,11 +7,11 @@ import requests
 import os
 import traceback
 import logging
-import io
 import time
 from decimal import Decimal
 import base64
-from mingdfs.utils import crypt_number, encrypt, decrypt_number, decrypt
+from mingdfs.utils import crypt_number, encrypt
+import json
 
 
 FILE_BP = Blueprint('file_bp', __name__)
@@ -81,10 +81,21 @@ def upload():
                     'title': title,
                     'category_id': category_id,
                     'file_extension': file_extension,
-                    'file_size': file_size
+                    'file_size': file_size,
+                    'timestamp': crypt_number(time.time())
                 }
 
-                r = requests.request(method, url, data=form_data, files=files)
+                q = 0
+                fk_l = len(settings.FMWS_KEY)
+                if fk_l < 16:
+                    q = 16 - fk_l
+                else:
+                    q = fk_l % 16
+                key = settings.FMWS_KEY
+                if q != 0:
+                    key += '0' * q
+                playload = encrypt(key, json.dumps(form_data)).decode()
+                r = requests.request(method, url, data={"playload": playload}, files=files)
                 r.raise_for_status()
                 if r.json()['status'] != 0:
                     add_time = int(time.time())
@@ -134,16 +145,18 @@ def download():
         user = User(MYSQL_POOL)
         user_id = user.get_user_id_by_api_key(api_key)
         if user_id is None:
+            print(1)
             return {"data": [], "status": 0}
 
         file = File(MYSQL_POOL)
-        fhp = file.get_file_extension_host_name_port_file_size(user_id, third_user_id, title, category_id)
+        fhp = file.get_file_extension_host_name_port_ip(user_id, third_user_id, title, category_id)
         if fhp is None:
+            print(3)
             return {"data": [], "status": 0}
         file_extension = fhp['file_extension']
         host_name = fhp['host_name']
         port = fhp['port']
-        file_size = fhp['file_size']
+        ip = fhp['ip']
 
         u = settings.FRWS_API_TEMPLATE['download']
         method = u['method']
@@ -153,18 +166,41 @@ def download():
             "third_user_id": third_user_id,
             "title": title,
             "category_id": category_id,
-            "file_extension": file_extension
+            "file_extension": file_extension,
+            'timestamp': crypt_number(time.time())
         }
-        r = requests.request(method, url, params=params, stream=True)
+
+        q = 0
+        fk_l = len(settings.FMWS_KEY)
+        if fk_l < 16:
+            q = 16 - fk_l
+        else:
+            q = fk_l % 16
+        key = settings.FMWS_KEY
+        if q != 0:
+            key += '0' * q
+        playload = encrypt(key, json.dumps(params)).decode()
+        r = requests.request(method, url, data=playload)
         r.raise_for_status()
-        file_name = str(time.time())
-        if file_extension != '':
-            file_name = file_name + '.' + file_extension
 
         # XXX: 这条sql可以考虑用file_id去优化
         if file.edit_last_access_time(user_id, third_user_id, title, category_id, int(time.time())) is False:
             print('修改last_access_time失败', request.args)
 
+        jd = r.json()
+        if jd['status'] != 0:
+            url = 'http://%s:%d/file/download?proof=%s' % (
+                ip,
+                port,
+                base64.standard_b64encode(playload.encode()).decode()
+            )
+            logging.debug('download_url: %s', url)
+
+            return {"data": [{'url': url}], 'status': 1}
+        else:
+            print(2, jd)
+            return {"data": [], "status": 0}
+        """
         def gen(r):
             size = 1024 * 1024 * 2
             for chunk in r.iter_content(size):
@@ -172,6 +208,9 @@ def download():
 
             r.close()
 
+        file_name = str(time.time())
+        if file_extension != '':
+            file_name = file_name + '.' + file_extension
         # return send_file(io.BytesIO(r.content), attachment_filename=file_name)
         mimetype = guess_type(file_name)[0] or "application/octet-stream"
         res = Response(gen(r), mimetype=mimetype)
@@ -184,6 +223,7 @@ def download():
             res.headers['Content-Range'] = range + str(file_size - 1)
         # x: end
         return res
+        """
 
 
 @FILE_BP.route('/delete', methods=['POST'])
@@ -222,9 +262,21 @@ def delete():
             "third_user_id": third_user_id,
             "title": title,
             "category_id": category_id,
-            "file_extension": file_extension
+            "file_extension": file_extension,
+            'timestamp': crypt_number(time.time())
         }
-        r = requests.request(method, url, data=form_data, headers={'Connection': 'close'})
+        q = 0
+        fk_l = len(settings.FMWS_KEY)
+        if fk_l < 16:
+            q = 16 - fk_l
+        else:
+            q = fk_l % 16
+        key = settings.FMWS_KEY
+        if q != 0:
+            key += '0' * q
+        playload = encrypt(key, json.dumps(form_data)).decode()
+
+        r = requests.request(method, url, data=playload, headers={'Connection': 'close'})
         r.raise_for_status()
         if r.json()['status'] != 0:
             if file.delete_file(user_id, third_user_id, title, category_id) is not True:
@@ -284,7 +336,8 @@ def edit():
             "src_category_id": src_category_id,
             "new_category_id": new_category_id,
             "src_file_extension": src_file_extension,
-            "new_file_extension": new_file_extension
+            "new_file_extension": new_file_extension,
+            'timestamp': crypt_number(time.time())
         }
         my_file = request.files.get('upload_file_name', None)
         r = None
@@ -300,11 +353,22 @@ def edit():
             port = fhp['port']
             frws_id = fhp['frws_id']
 
+            q = 0
+            fk_l = len(settings.FMWS_KEY)
+            if fk_l < 16:
+                q = 16 - fk_l
+            else:
+                q = fk_l % 16
+            key = settings.FMWS_KEY
+            if q != 0:
+                key += '0' * q
+            playload = encrypt(key, json.dumps(form_data)).decode()
+
             if my_file is None:
                 u = settings.FRWS_API_TEMPLATE['edit']
                 method = u['method']
                 url = u['url'] % (host_name, port)
-                r = requests.request(method, url, data=form_data, headers={'Connection': 'close'})
+                r = requests.request(method, url, data=playload, headers={'Connection': 'close'})
             else:
                 redis_op = RediOP(REDIS_CLI)
                 host_name, port = redis_op.get_best_frws_host_name_port()
@@ -332,9 +396,11 @@ def edit():
                     'title': new_title,
                     'category_id': new_category_id,
                     'file_extension': new_file_extension,
-                    'file_size': os.path.getsize(save_path)
+                    'file_size': os.path.getsize(save_path),
+                    'timestamp': crypt_number(time.time())
                 }
-                r = requests.request(method, url, data=form_data, files=files)
+                playload = encrypt(key, json.dumps(form_data)).decode()
+                r = requests.request(method, url, data={'playload': playload}, files=files)
                 r.raise_for_status()
                 if r.json()['status'] == 0:
                     return {"data": [], "status": 0}
@@ -347,9 +413,11 @@ def edit():
                     'third_user_id': src_third_user_id,
                     'title': src_title,
                     'category_id': src_category_id,
-                    'file_extension': src_file_extension
+                    'file_extension': src_file_extension,
+                    'timestamp': crypt_number(time.time())
                 }
-                r = requests.request(method, url, data=form_data)
+                playload = encrypt(key, json.dumps(form_data)).decode()
+                r = requests.request(method, url, data=playload)
 
             r.raise_for_status()
             if r.json()['status'] != 0:

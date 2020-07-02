@@ -6,6 +6,10 @@ from flask import request, Blueprint, send_from_directory
 
 from mingdfs.frws import settings
 from mingdfs.frws import APP
+from mingdfs.utils import decrypt
+import json
+from mingdfs import frws
+
 
 FILE_BP = Blueprint('file_bp', __name__)
 
@@ -24,23 +28,36 @@ def hello():
             return {"data": [], "status": 1}
 
 
-@FILE_BP.route('/upload', methods=['GET'])
+@FILE_BP.route('/upload', methods=['POST'])
 def upload():
     """上传文件
 
-    GET 请求form表单 {"user_id": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx, "file_extension": xxx, "file_size": xxx}
+    POST 请求加密后的form表单 {"user_id": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx, "file_extension": xxx, "file_size": xxx}
         返回json 成功 {"data": [], "status": 1}
                 失败 {"data": [], "status": 0}
 
         XXX: file_size的单位为字节，1G = 1024 * 1024 * 1024(字节)
     """
-    if request.method == "GET":
-        user_id = request.form['user_id']
-        third_user_id = request.form['third_user_id']
-        title = request.form['title']
-        category_id = request.form['category_id']
-        file_extension = request.form['file_extension']
-        file_size = int(request.form['file_size'])
+    if request.method == "POST":
+        playload = request.form['playload']
+
+        q = 0
+        fk_l = len(settings.FMWS_KEY)
+        if fk_l < 16:
+            q = 16 - fk_l
+        else:
+            q = fk_l % 16
+        key = settings.FMWS_KEY
+        if q != 0:
+            key += '0' * q
+        form_data = json.loads(decrypt(key, playload))
+
+        user_id = form_data['user_id']
+        third_user_id = form_data['third_user_id']
+        title = form_data['title']
+        category_id = form_data['category_id']
+        file_extension = form_data['file_extension']
+        file_size = int(form_data['file_size'])
 
         save_file_name = str(user_id) + '_' + str(third_user_id) + '_' + title + \
                          '_' + str(category_id)
@@ -81,20 +98,39 @@ def upload():
         return {"data": [], "status": 0}
 
 
-@FILE_BP.route('/download', methods=['GET'])
+@FILE_BP.route('/download', methods=['GET', 'POST'])
 def download():
     """下载文件
 
-    GET 请求url参数 {"user_id": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx, "file_extension": xxx}
-        返回 成功 二进制数据
+    POST 请求经过加密过的payload {"user_id": xxx, "third_user_id": xxx,
+                               "title": xxx, "category_id": xxx,
+                               "file_extension": xxx, "timestamp": xxx}
+        返回 成功 json {"data": [], "status": 1}
             失败 json {"data": [], "status": 0}
+
+    GET 请求url参数 { "payload": xxx}
+        成功 返回 二进制数据
+        失败 返回 json {"data": [], "status": 0}
     """
-    if request.method == 'GET':
-        user_id = request.args.get('user_id')
-        third_user_id = request.args.get("third_user_id")
-        title = request.args.get('title')
-        category_id = request.args.get("category_id")
-        file_extension = request.args.get('file_extension')
+    if request.method == 'POST':
+        req_body = request.get_data().decode()
+
+        q = 0
+        fk_l = len(settings.FMWS_KEY)
+        if fk_l < 16:
+            q = 16 - fk_l
+        else:
+            q = fk_l % 16
+        key = settings.FMWS_KEY
+        if q != 0:
+            key += '0' * q
+        form_data = json.loads(decrypt(key, req_body))
+
+        user_id = form_data.get('user_id')
+        third_user_id = form_data.get("third_user_id")
+        title = form_data.get('title')
+        category_id = form_data.get("category_id")
+        file_extension = form_data.get('file_extension')
         file_name = str(user_id) + '_' + str(third_user_id) + '_' + title + \
                     '_' + str(category_id)
         file_name = base64.standard_b64encode(file_name.encode()).decode()
@@ -105,16 +141,54 @@ def download():
         for save_dir in settings.SAVE_DIRS:
             file_path = save_dir + os.path.sep + file_name
             if os.path.exists(file_path):
-                return send_from_directory(save_dir, file_name)
+                frws.REDIS_CLI.set(file_name, req_body, 30)
+                return {"data": [], "status": 1}
+        return {"data": [], "status": 0}
+    elif request.method == 'GET':
+        proof = request.args.get('proof').encode()
+        playload = base64.standard_b64decode(proof)
+        print('playload: %s' % playload)
+
+        q = 0
+        fk_l = len(settings.FMWS_KEY)
+        if fk_l < 16:
+            q = 16 - fk_l
+        else:
+            q = fk_l % 16
+        key = settings.FMWS_KEY
+        if q != 0:
+            key += '0' * q
+
+        form_data = json.loads(decrypt(key, playload))
+
+        user_id = form_data.get('user_id')
+        third_user_id = form_data.get("third_user_id")
+        title = form_data.get('title')
+        category_id = form_data.get("category_id")
+        file_extension = form_data.get('file_extension')
+        file_name = str(user_id) + '_' + str(third_user_id) + '_' + title + \
+                    '_' + str(category_id)
+        file_name = base64.standard_b64encode(file_name.encode()).decode()
+        file_name = base64.standard_b64encode(file_name.encode()).decode()
+        if file_extension != '':
+            file_name = file_name + "." + file_extension
+
+        if frws.REDIS_CLI.get(file_name) is None:
+            return {"data": [], "status": 0}
+
+        for save_dir in settings.SAVE_DIRS:
+            file_path = save_dir + os.path.sep + file_name
+            if os.path.exists(file_path):
+                return send_from_directory(save_dir, file_name, attachment_filename=file_name)
 
         return {"data": [], "status": 0}
 
 
-@FILE_BP.route('/edit', methods=['GET'])
+@FILE_BP.route('/edit', methods=['POST'])
 def edit():
     """编辑文件，user_id, title, category_id, file_extension
 
-       GET 请求form表单 {
+       POST 请求加密的form表单 {
                         "user_id": xxx,
                         "src_third_user_id": xxx,
                         "new_third_user_id": xxx,
@@ -128,39 +202,55 @@ def edit():
            返回json 成功 {"data": [], "status": 1}
                    失败 {"data": [], "status": 0}
     """
-    if request.method == "GET":
-        user_id = request.form['user_id']
+    if request.method == "POST":
+        req_body = request.get_data().decode()
 
-        src_third_user_id = request.form['src_third_user_id']
-        src_title = request.form['src_title']
-        src_category_id = request.form['src_category_id']
-        src_file_extension = request.form['src_file_extension']
-        new_title = request.form['new_title']
-        new_category_id = request.form['new_category_id']
-        new_file_extension = request.form['new_file_extension']
-        new_third_user_id = request.form['new_third_user_id']
+        q = 0
+        fk_l = len(settings.FMWS_KEY)
+        if fk_l < 16:
+            q = 16 - fk_l
+        else:
+            q = fk_l % 16
+        key = settings.FMWS_KEY
+        if q != 0:
+            key += '0' * q
+        form_data = json.loads(decrypt(key, req_body))
+
+        user_id = form_data['user_id']
+
+        src_third_user_id = form_data['src_third_user_id']
+        src_title = form_data['src_title']
+        src_category_id = form_data['src_category_id']
+        src_file_extension = form_data['src_file_extension']
+        new_title = form_data['new_title']
+        new_category_id = form_data['new_category_id']
+        new_file_extension = form_data['new_file_extension']
+        new_third_user_id = form_data['new_third_user_id']
 
         for save_dir in settings.SAVE_DIRS:
-            src_save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(src_third_user_id) + '_' + \
+            src_file_name = str(user_id) + '_' + str(src_third_user_id) + '_' + \
                                  src_title + \
                                  '_' + str(src_category_id)
-            src_save_file_name = base64.standard_b64encode(src_save_file_name.encode()).decode()
-            src_save_file_name = base64.standard_b64encode(src_save_file_name.encode()).decode()
+            src_file_name = base64.standard_b64encode(src_file_name.encode()).decode()
+            src_file_name = base64.standard_b64encode(src_file_name.encode()).decode()
 
             if src_file_extension != '':
-                src_save_file_name = src_save_file_name + "." + src_file_extension
+                src_file_name = src_file_name + "." + src_file_extension
+
+            src_save_file_name = save_dir + os.path.sep + src_file_name
             if not os.path.exists(src_save_file_name):
                 continue
 
-            new_save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(new_third_user_id) + '_' + \
+            new_file_name = str(user_id) + '_' + str(new_third_user_id) + '_' + \
                                  new_title + \
                                  '_' + str(new_category_id)
-            new_save_file_name = base64.standard_b64encode(new_save_file_name.encode()).decode()
-            new_save_file_name = base64.standard_b64encode(new_save_file_name.encode()).decode()
+            new_file_name = base64.standard_b64encode(new_file_name.encode()).decode()
+            new_file_name = base64.standard_b64encode(new_file_name.encode()).decode()
 
             if new_file_extension != '':
-                new_save_file_name = new_save_file_name + "." + new_file_extension
+                new_file_name = new_file_name + "." + new_file_extension
 
+            new_save_file_name = save_dir + os.path.sep + new_file_name
             if os.path.exists(new_save_file_name):
                 return {"data": [], "status": 0}
 
@@ -174,30 +264,44 @@ def edit():
         return {"data": [], "status": 0}
 
 
-@FILE_BP.route('/delete', methods=['GET'])
+@FILE_BP.route('/delete', methods=['POST'])
 def delete():
     """删除文件
 
-    GET 请求form表单 {"user_id": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx, "file_extension": xxx}
+    GET 请求加密的form表单 {"user_id": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx, "file_extension": xxx}
         返回json 成功 {"data": [], "status": 0}
                 失败 {"data": [], "status": 1}
     """
-    if request.method == 'GET':
+    if request.method == 'POST':
         try:
-            user_id = request.form['user_id']
-            third_user_id = request.form['third_user_id']
-            title = request.form['title']
-            category_id = request.form['category_id']
-            file_extension = request.form['file_extension']
+            req_body = request.get_data().decode()
+
+            q = 0
+            fk_l = len(settings.FMWS_KEY)
+            if fk_l < 16:
+                q = 16 - fk_l
+            else:
+                q = fk_l % 16
+            key = settings.FMWS_KEY
+            if q != 0:
+                key += '0' * q
+            form_data = json.loads(decrypt(key, req_body))
+
+            user_id = form_data['user_id']
+            third_user_id = form_data['third_user_id']
+            title = form_data['title']
+            category_id = form_data['category_id']
+            file_extension = form_data['file_extension']
 
             for save_dir in settings.SAVE_DIRS:
-                save_file_name = save_dir + os.path.sep + str(user_id) + '_' + str(third_user_id) + '_' + title + \
+                file_name = str(user_id) + '_' + str(third_user_id) + '_' + title + \
                                  '_' + str(category_id)
-                save_file_name = base64.standard_b64encode(save_file_name.encode()).decode()
-                save_file_name = base64.standard_b64encode(save_file_name.encode()).decode()
+                file_name = base64.standard_b64encode(file_name.encode()).decode()
+                file_name = base64.standard_b64encode(file_name.encode()).decode()
                 if file_extension != '':
-                    save_file_name = save_file_name + "." + file_extension
+                    file_name = file_name + "." + file_extension
 
+                save_file_name = save_dir + os.path.sep + file_name
                 if os.path.exists(save_file_name):
                     try:
                         os.remove(save_file_name)

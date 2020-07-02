@@ -5,12 +5,11 @@ import argparse
 import logging
 import json
 import os
-from multiprocessing import Process
 from mingdfs.fmws.stat_process import start_stat
 
 
 
-def main(log_level=logging.DEBUG, debug=False):
+def main(log_level=logging.DEBUG):
     logging.basicConfig(level=log_level, format='%(levelname)s:%(asctime)s:%(name)s[%(message)s]')
 
     parser = argparse.ArgumentParser('欢迎使用fmws。')
@@ -51,15 +50,17 @@ def main(log_level=logging.DEBUG, debug=False):
     parser.add_argument('--STAT_INTERVAL', type=int, default=30,
                         help='输入统计进程执行间隔：默认，30秒')
 
+    parser.add_argument('--PROCESS_TYPE', type=int, default=0, help='输入启动的进程类别: 0: fmws, 1: stat_process')
+
     flags = parser.parse_args()
     try:
-        _read_command_line(flags, debug)
+        _read_command_line(flags)
     except:
         import traceback
         logging.error(traceback.format_exc())
 
 
-def _read_command_line(flags, debug):
+def _read_command_line(flags):
     from mingdfs.fmws import settings
 
     settings.SECRET_KEY = flags.SECRET_KEY
@@ -80,26 +81,20 @@ def _read_command_line(flags, debug):
     if not os.path.exists(settings.FMWS_CACHE):
         os.makedirs(settings.FMWS_CACHE, exist_ok=True)
 
-    from mingdfs.fmws import apps
-    apps.init_mr()
-    apps.REDIS_CLI.set(settings.CACHE_STAT_INTERVAL_KEY, flags.STAT_INTERVAL)
-    apps.init_app()
+    if flags.PROCESS_TYPE == 0:
+        from mingdfs.fmws import apps
+        apps.init_mr()
+        apps.init_app()
 
-    ss = Process(target=start_stat)
-    fs = Process(target=apps.start_fmws, args=(settings.HOST, settings.PORT))
-    try:
-        ss.start()
-        fs.start()
-        fs.join()
-    except:
-        pass
-    finally:
-        apps.REDIS_CLI.delete(settings.CACHE_FRWS_COMPUTERS_KEY)
-        apps.REDIS_CLI.delete(settings.CACHE_STAT_INTERVAL_KEY)
-        apps.REDIS_CLI.delete(settings.CACHE_FRWS_STAT_INFOR_KEY)
-        apps.MYSQL_POOL.release()
-        apps.REDIS_CLI.close()
+        try:
+            # apps.start_fmws(settings.HOST, settings.PORT)
+            apps.debug(settings.HOST, settings.PORT)
+        finally:
+            apps.MYSQL_POOL.release()
+            apps.REDIS_CLI.close()
+    else:
+        start_stat(flags.STAT_INTERVAL)
 
 
 if __name__ == '__main__':
-    main(debug=True)
+    main()

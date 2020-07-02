@@ -124,6 +124,7 @@ def add_to_16(text):
 
 # 加密函数
 def encrypt(key, text):
+    logging.debug("key: %s", key)
     key = key.encode('utf-8')
     mode = AES.MODE_CBC
     iv = b'qqqqqqqqqqqqqqqq'
@@ -136,6 +137,7 @@ def encrypt(key, text):
 
 # 解密后，去掉补足的空格用strip() 去掉
 def decrypt(key, text):
+    logging.debug("key: %s", key)
     key = key.encode('utf-8')
     iv = b'qqqqqqqqqqqqqqqq'
     mode = AES.MODE_CBC
@@ -147,8 +149,9 @@ def decrypt(key, text):
 if __name__ == '__main__':
     key = '1234567890123456'
     msg = encrypt(key, 'hello')
-    print(msg)
-    print(decrypt(key, msg))
+    print('msg:', msg)
+    my = decrypt(key, msg)
+    print('my:', msg)
 
     en = crypt_number(123.4)
     print(en)

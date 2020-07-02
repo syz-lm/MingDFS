@@ -5,7 +5,8 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def index():
-    return hmac.request.get_data().decode()
+    print(type(request.get_data()))
+    return '1'
 
 
 app.run(port=18000)
