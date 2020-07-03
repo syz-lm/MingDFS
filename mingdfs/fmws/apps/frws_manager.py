@@ -26,7 +26,6 @@ def register_frws():
                 失败 {"data": [], "status": 0}
     """
     if request.method == 'GET':
-        logging.debug('register_frws: %s', request.form)
         host_name = request.form['host_name']
         ip = request.form['ip']
         port = request.form['port']

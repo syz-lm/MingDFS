@@ -145,13 +145,11 @@ def download():
         user = User(MYSQL_POOL)
         user_id = user.get_user_id_by_api_key(api_key)
         if user_id is None:
-            print(1)
             return {"data": [], "status": 0}
 
         file = File(MYSQL_POOL)
         fhp = file.get_file_extension_host_name_port_ip(user_id, third_user_id, title, category_id)
         if fhp is None:
-            print(3)
             return {"data": [], "status": 0}
         file_extension = fhp['file_extension']
         host_name = fhp['host_name']
@@ -198,7 +196,6 @@ def download():
 
             return {"data": [{'url': url}], 'status': 1}
         else:
-            print(2, jd)
             return {"data": [], "status": 0}
         """
         def gen(r):
@@ -280,13 +277,10 @@ def delete():
         r.raise_for_status()
         if r.json()['status'] != 0:
             if file.delete_file(user_id, third_user_id, title, category_id) is not True:
-                print(1, user_id, third_user_id, title, category_id)
-
                 return {"data": [], "status": 0}
             else:
                 return {"data": [], "status": 1}
         else:
-            print(1)
             return {"data": [], "status": 0}
 
 

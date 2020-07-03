@@ -148,7 +148,6 @@ def download():
     elif request.method == 'GET':
         proof = request.args.get('proof').encode()
         playload = base64.standard_b64decode(proof).decode()
-        print('playload: %s' % playload)
 
         q = 0
         fk_l = len(settings.FMWS_KEY)
