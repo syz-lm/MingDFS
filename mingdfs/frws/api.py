@@ -1,5 +1,6 @@
 import base64
 import os
+import time
 
 import psutil
 from flask import request, Blueprint, send_from_directory
@@ -137,16 +138,16 @@ def download():
         file_name = base64.standard_b64encode(file_name.encode()).decode()
         if file_extension != '':
             file_name = file_name + "." + file_extension
-
+        
         for save_dir in settings.SAVE_DIRS:
             file_path = save_dir + os.path.sep + file_name
             if os.path.exists(file_path):
-                frws.REDIS_CLI.set(file_name, req_body, 30)
+                frws.REDIS_CLI.set(req_body, file_name)
                 return {"data": [], "status": 1}
         return {"data": [], "status": 0}
     elif request.method == 'GET':
         proof = request.args.get('proof').encode()
-        playload = base64.standard_b64decode(proof)
+        playload = base64.standard_b64decode(proof).decode()
         print('playload: %s' % playload)
 
         q = 0
@@ -159,7 +160,7 @@ def download():
         if q != 0:
             key += '0' * q
 
-        form_data = json.loads(decrypt(key, playload))
+        form_data = json.loads(decrypt(key, playload.encode()))
 
         user_id = form_data.get('user_id')
         third_user_id = form_data.get("third_user_id")
@@ -173,7 +174,7 @@ def download():
         if file_extension != '':
             file_name = file_name + "." + file_extension
 
-        if frws.REDIS_CLI.get(file_name) is None:
+        if frws.REDIS_CLI.get(playload) != file_name.encode():
             return {"data": [], "status": 0}
 
         for save_dir in settings.SAVE_DIRS:

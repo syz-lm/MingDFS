@@ -119,7 +119,7 @@ def debug(host, port):
     global APP
     _init_bp()
 
-    APP.run(host=host, port=port)
+    APP.run(host=host, port=port, threaded=True)
 
 
 if __name__ == '__main__':

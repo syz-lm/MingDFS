@@ -6,10 +6,10 @@ import argparse
 import logging
 import os
 import json
-from mingdfs.frws import start_frws, register_frws, debug
+from mingdfs.frws import start_frws, register_frws, debug_frws
 
 
-def main(log_level=logging.DEBUG):
+def main(log_level=logging.DEBUG, debug=False):
     logging.basicConfig(level=log_level, format='%(levelname)s:%(asctime)s:%(name)s[%(message)s]')
 
     parser = argparse.ArgumentParser('欢迎使用frws。')
@@ -28,6 +28,9 @@ def main(log_level=logging.DEBUG):
 
     parser.add_argument('--FMWS_HOST_NAME', type=str, default='fmws0',
                         help='输入fmws主机名：默认，fmws0')
+
+    parser.add_argument('--FMWS_IP', type=str, default='127.0.0.1',
+                        help='输入FMWS服务器IP：默认，127.0.0.1')
 
     parser.add_argument('--FMWS_PORT', type=int, default=15675,
                         help='输入fmws服务端口：默认，15675')
@@ -54,13 +57,13 @@ def main(log_level=logging.DEBUG):
 
     flags = parser.parse_args()
     try:
-        _read_command_line(flags)
+        _read_command_line(flags, debug)
     except KeyboardInterrupt:
         import traceback
         logging.error(traceback.format_exc())
 
 
-def _read_command_line(flags):
+def _read_command_line(flags, debug):
     from mingdfs.frws import settings
 
     settings.HOST = flags.HOST
@@ -68,6 +71,7 @@ def _read_command_line(flags):
     settings.PORT = flags.PORT
     settings.HOST_NAME = flags.HOST_NAME
     settings.FMWS_HOST_NAME = flags.FMWS_HOST_NAME
+    settings.FMWS_IP = flags.FMWS_IP
     settings.FMWS_PORT = flags.FMWS_PORT
 
     settings.FMWS_KEY = flags.FMWS_KEY
@@ -78,9 +82,13 @@ def _read_command_line(flags):
     settings.REDIS_CONFIG = flags.REDIS_CONFIG
     settings.SECRET_KEY = flags.SECRET_KEY
 
-    logging.debug('HOST: %s, IP: %s, PORT: %s, HOST_NAME: %s, FMWS_HOST_NAME: %s, FMWS_PORT: %s, FMWS_KEY: %s, FRWS_KEY: %s, SAVE_DIRS: %s, REDIS_CONFIG: %s, SECRET_KEY: %s',
-                  settings.HOST, settings.IP, settings.PORT, settings.HOST_NAME, settings.FMWS_HOST_NAME, settings.FMWS_PORT, settings.FMWS_KEY,
+    logging.debug('HOST: %s, IP: %s, PORT: %s, HOST_NAME: %s, FMWS_HOST_NAME: %s, FMWS_IP: %s, FMWS_PORT: %s, FMWS_KEY: %s, FRWS_KEY: %s, SAVE_DIRS: %s, REDIS_CONFIG: %s, SECRET_KEY: %s',
+                  settings.HOST, settings.IP, settings.PORT, settings.HOST_NAME, settings.FMWS_HOST_NAME, settings.FMWS_IP, settings.FMWS_PORT, settings.FMWS_KEY,
                   settings.FRWS_KEY, settings.SAVE_DIRS, str(settings.REDIS_CONFIG), settings.SECRET_KEY)
+
+    if settings.IP == '0.0.0.0':
+        logging.error('IP不能为0.0.0.0，必须是外网地址')
+        return
 
     if len(settings.SAVE_DIRS) == 0:
         logging.error('存储磁盘不能为空')
@@ -101,8 +109,10 @@ def _read_command_line(flags):
 
     if flags.PROCESS_TYPE == 0:
         try:
-            start_frws(settings.HOST, settings.PORT)
-            # debug(settings.HOST, settings.PORT)
+            if not debug:
+                start_frws(settings.HOST, settings.PORT)
+            else:
+                debug_frws(settings.HOST, settings.PORT)
         except:
             pass
         finally:
@@ -110,6 +120,22 @@ def _read_command_line(flags):
             if REDIS_CLI: REDIS_CLI.close()
     else:
         import time
+        import socket
+        from mingdfs.utils import load_hosts, dump_hosts, add_hosts, delete_hosts
+
+        real_create_conn = socket.create_connection
+
+        def set_src_addr(*args):
+            address, timeout = args[0], args[1]
+            source_address = (settings.IP, 0)
+            return real_create_conn(address, timeout, source_address)
+
+        socket.create_connection = set_src_addr
+
+        ih = load_hosts()
+        ih = add_hosts(ih, settings.FMWS_IP, settings.FMWS_HOST_NAME)
+        dump_hosts(ih)
+
         while 1:
             try:
                 _hello()
@@ -119,4 +145,4 @@ def _read_command_line(flags):
 
 
 if __name__ == '__main__':
-    main()
+    main(debug=True)

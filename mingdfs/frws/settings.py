@@ -3,6 +3,7 @@ IP = '127.0.0.1'
 PORT = 15676
 HOST_NAME = 'frws0'
 FMWS_HOST_NAME = 'fmws0'
+FMWS_IP = '127.0.0.1'
 FMWS_PORT = 15675
 
 SAVE_DIRS = [

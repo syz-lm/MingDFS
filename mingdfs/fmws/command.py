@@ -9,7 +9,7 @@ from mingdfs.fmws.stat_process import start_stat
 
 
 
-def main(log_level=logging.DEBUG):
+def main(log_level=logging.DEBUG, debug=False):
     logging.basicConfig(level=log_level, format='%(levelname)s:%(asctime)s:%(name)s[%(message)s]')
 
     parser = argparse.ArgumentParser('欢迎使用fmws。')
@@ -55,13 +55,13 @@ def main(log_level=logging.DEBUG):
 
     flags = parser.parse_args()
     try:
-        _read_command_line(flags)
+        _read_command_line(flags, debug)
     except:
         import traceback
         logging.error(traceback.format_exc())
 
 
-def _read_command_line(flags):
+def _read_command_line(flags, debug):
     from mingdfs.fmws import settings
 
     settings.SECRET_KEY = flags.SECRET_KEY
@@ -88,8 +88,10 @@ def _read_command_line(flags):
         apps.init_app()
 
         try:
-            apps.start_fmws(settings.HOST, settings.PORT)
-            # apps.debug(settings.HOST, settings.PORT)
+            if not debug:
+                apps.start_fmws(settings.HOST, settings.PORT)
+            else:
+                apps.debug(settings.HOST, settings.PORT)
         finally:
             apps.MYSQL_POOL.release()
             apps.REDIS_CLI.close()
@@ -98,4 +100,4 @@ def _read_command_line(flags):
 
 
 if __name__ == '__main__':
-    main()
+    main(debug=True)

@@ -49,10 +49,10 @@ def start_frws(host, port):
         except:
             logging.error(traceback.format_exc())
 
-def debug(host, port):
+def debug_frws(host, port):
     global APP
     init_redis_cli()
-    APP.run(host, port)
+    APP.run(host, port, threaded=True)
 
 
 def register_frws(host_name, ip, port, fmws_key, fmws_host_name, fmws_port, save_dirs, frws_key):

@@ -1,6 +1,6 @@
 from flask import Blueprint, request
 from mingdfs.fmws import settings
-from mingdfs.utils import load_hosts, dump_hosts
+from mingdfs.utils import load_hosts, dump_hosts, add_hosts
 import requests
 from mingdfs.fmws import apps
 from mingdfs.fmws.db import FRWS
@@ -43,14 +43,13 @@ def register_frws():
         except:
             return {"data": [], "status": 0}
 
+        ih = load_hosts()
+        add_hosts(ih, ip, host_name)
+        dump_hosts(ih)
+
         frws = FRWS(apps.MYSQL_POOL)
         if frws.exists(host_name, ip, port) is False:
             if frws.add_frws(host_name, ip, port, save_dirs, fmws_key, frws_key) is True:
-                ih = load_hosts()
-                ih[ip] = set()
-                ih[ip].add(host_name)
-                dump_hosts(ih)
-
                 apps.REDIS_CLI.hset(settings.CACHE_FRWS_COMPUTERS_KEY, host_name, port)
                 return {"data": [], "status": 1}
             else:

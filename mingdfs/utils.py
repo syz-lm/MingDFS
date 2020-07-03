@@ -38,6 +38,8 @@ def load_hosts():
                     tmp = line.split(' ')
                     ip = tmp[0]
                     if ip != '#':
+                        if len(tmp) == 1:
+                            continue
                         host_names = tmp[1:]
                         host_names[len(host_names) - 1] = host_names[len(host_names) - 1].replace('\n', '')
 
@@ -46,6 +48,31 @@ def load_hosts():
                         else:
                             ih[ip] = set([host_name for host_name in host_names if len(host_name) != 0])
 
+
+    return ih
+
+
+def add_hosts(ih: dict, ip, host_name):
+    for i in ih.keys():
+        try:
+            ih[i].remove(host_name)
+        except:
+            pass
+
+    if ip in ih:
+        ih[ip].add(host_name)
+    else:
+        ih[ip].add(host_name)
+
+    return ih
+
+
+def delete_hosts(ih: dict, ip, host_name):
+    if ip in ih:
+        try:
+            ih[ip].remove(host_name)
+        except:
+            pass
 
     return ih
 
