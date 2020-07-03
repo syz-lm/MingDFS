@@ -86,6 +86,7 @@ $ pip3.8 install requests requests-toolbelt
   * 请求url: 上传接口的地址，http://serv_pro:15673/file/upload，serv_pro和端口15673需由实际ip和端口替换
   * 请求方法: post请求表单并且上传文件
   * 代码例子:
+  
     ```
     import requests
     from requests_toolbelt import MultipartEncoder
@@ -112,6 +113,7 @@ $ pip3.8 install requests requests-toolbelt
     else:
         print('不是服务端发送的数据')
     ```
+
 * 下载文件
   * api_key: 用户需要到fmws官网注册账号，注册之后，fmws会给用户分配一个api_key
   * category_id: 用户这边的分类id，必须是字符串
@@ -120,6 +122,7 @@ $ pip3.8 install requests requests-toolbelt
   * 请求方法: GET请求表单
   * 请求url: http://serv_pro:15673/file/download, serv_pro:15673由实际的ip和端口替换
   * 代码例子:
+  
     ```
     $.ajax({
             type: 'GET',
