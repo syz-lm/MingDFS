@@ -1,14 +1,12 @@
-from gevent.pywsgi import WSGIServer
-
 import logging
 import traceback
-from flask import Flask
-import requests
-from redis import StrictRedis
-from flask_session import Session
-from datetime import timedelta
-from mingdfs.frws import settings
 
+import requests
+from flask import Flask
+from gevent.pywsgi import WSGIServer
+from redis import StrictRedis
+
+from mingdfs.frws import settings
 
 REDIS_CLI: StrictRedis = None
 

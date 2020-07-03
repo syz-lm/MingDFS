@@ -8,28 +8,19 @@
 
 ```
 $ fmws --help
-usage: 欢迎使用fmws。 [-h] [--SECRET_KEY SECRET_KEY] [--MYSQL_CONFIG MYSQL_CONFIG]
-                 [--MAIL_CONFIG MAIL_CONFIG] [--REDIS_CONFIG REDIS_CONFIG]
-                 [--HOST_NAME HOST_NAME] [--HOST HOST] [--PORT PORT]
-                 [--FMWS_KEY FMWS_KEY] [--FRWS_KEY FRWS_KEY]
-                 [--FMWS_CACHE FMWS_CACHE] [--STAT_INTERVAL STAT_INTERVAL]
-                 [--PROCESS_TYPE PROCESS_TYPE]
+usage: 欢迎使用fmws。 [-h] [--SECRET_KEY SECRET_KEY] [--MYSQL_CONFIG MYSQL_CONFIG] [--MAIL_CONFIG MAIL_CONFIG] [--REDIS_CONFIG REDIS_CONFIG] [--HOST_NAME HOST_NAME] [--HOST HOST] [--PORT PORT]
+                 [--FMWS_KEY FMWS_KEY] [--FRWS_KEY FRWS_KEY] [--FMWS_CACHE FMWS_CACHE] [--STAT_INTERVAL STAT_INTERVAL] [--PROCESS_TYPE PROCESS_TYPE]
 
 optional arguments:
   -h, --help            show this help message and exit
   --SECRET_KEY SECRET_KEY
                         输入SESSION盐值：默认，mm5201314
   --MYSQL_CONFIG MYSQL_CONFIG
-                        输入服务器MYSQL配置：默认，{"host": "serv_pro", "user": "root",
-                        "passwd": "mm5201314", "db": "mingdfs", "size": 5}
+                        输入服务器MYSQL配置：默认，{"host": "serv_pro", "user": "root", "passwd": "mm5201314", "db": "mingdfs", "size": 5}
   --MAIL_CONFIG MAIL_CONFIG
-                        输入mail配置：默认，{"host": "smtp.qq.com", "port": 465,
-                        "username": "858556393@qq.com", "password":
-                        "hacnvlxplaqkbbhj", "forget_password_msg": "[XXX:
-                        MingDFS] 您的验证码: 替换验证码"}
+                        输入mail配置：默认，{"host": "smtp.qq.com", "port": 465, "username": "858556393@qq.com", "password": "hacnvlxplaqkbbhj", "forget_password_msg": "[XXX: MingDFS] 您的验证码: 替换验证码"}
   --REDIS_CONFIG REDIS_CONFIG
-                        输入redis配置：默认，{"host": "serv_pro", "port": 6379, "db":
-                        0, "passwd": "mm5201314"}
+                        输入redis配置：默认，{"host": "serv_pro", "port": 6379, "db": 0, "passwd": "mm5201314"}
   --HOST_NAME HOST_NAME
                         输入fmws服务host name：默认，fmws0
   --HOST HOST           输入fmws服务运行地址：默认，0.0.0.0
@@ -44,18 +35,12 @@ optional arguments:
                         输入启动的进程类别: 0: fmws, 1: stat_process
 ```
 
-文件中间层服务器配置和启动。
-
 ## FRWS
 
 ```
 $ frws --help
-usage: 欢迎使用frws。 [-h] [--HOST HOST] [--IP IP] [--PORT PORT]
-                 [--HOST_NAME HOST_NAME] [--FMWS_HOST_NAME FMWS_HOST_NAME]
-                 [--FMWS_PORT FMWS_PORT] [--FMWS_KEY FMWS_KEY]
-                 [--FRWS_KEY FRWS_KEY] [--SAVE_DIRS SAVE_DIRS [SAVE_DIRS ...]]
-                 [--REDIS_CONFIG REDIS_CONFIG] [--SECRET_KEY SECRET_KEY]
-                 [--PROCESS_TYPE PROCESS_TYPE]
+usage: 欢迎使用frws。 [-h] [--HOST HOST] [--IP IP] [--PORT PORT] [--HOST_NAME HOST_NAME] [--FMWS_HOST_NAME FMWS_HOST_NAME] [--FMWS_IP FMWS_IP] [--FMWS_PORT FMWS_PORT] [--FMWS_KEY FMWS_KEY]
+                 [--FRWS_KEY FRWS_KEY] [--SAVE_DIRS SAVE_DIRS [SAVE_DIRS ...]] [--REDIS_CONFIG REDIS_CONFIG] [--SECRET_KEY SECRET_KEY] [--PROCESS_TYPE PROCESS_TYPE]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -66,6 +51,7 @@ optional arguments:
                         输入frws主机名：默认，frws0
   --FMWS_HOST_NAME FMWS_HOST_NAME
                         输入fmws主机名：默认，fmws0
+  --FMWS_IP FMWS_IP     输入FMWS服务器IP：默认，127.0.0.1
   --FMWS_PORT FMWS_PORT
                         输入fmws服务端口：默认，15675
   --FMWS_KEY FMWS_KEY   输入fmws服务访问key：默认，mm5201314
@@ -73,12 +59,12 @@ optional arguments:
   --SAVE_DIRS SAVE_DIRS [SAVE_DIRS ...]
                         输入服务器存储路径列表：默认，['/mnt/hgfs/mingdfs/frws']
   --REDIS_CONFIG REDIS_CONFIG
-                        输入redis配置：默认，{"host": "serv_pro", "port": 6379, "db":
-                        0, "passwd": "mm5201314"}
+                        输入redis配置：默认，{"host": "serv_pro", "port": 6379, "db": 0, "passwd": "mm5201314"}
   --SECRET_KEY SECRET_KEY
                         输入SESSION盐值：默认，mm5201314
   --PROCESS_TYPE PROCESS_TYPE
                         输入进程类型：0: frws, 1: register_frws
+
 ```
 
 文件资源服务器的配置和启动。
