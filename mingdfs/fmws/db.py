@@ -227,7 +227,7 @@ class File(MySQLBase):
                 from file
                 where
                     user_id = %s 
-                order by id desc 
+                order by id desc, last_access_time desc 
                 limit %s, 25
                 """)
         args = (user_id, (page - 1) * 25)
