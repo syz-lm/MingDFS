@@ -1,8 +1,9 @@
-from mingdfs.db_mysql import MySQLBase
-from mingdfs.fmws import settings
 import json
 import logging
 import math
+
+from mingdfs.db_mysql import MySQLBase
+from mingdfs.fmws import settings
 
 
 class User(MySQLBase):
@@ -225,7 +226,8 @@ class File(MySQLBase):
                     file_extension
                 from file
                 where
-                    user_id = %s
+                    user_id = %s 
+                order by id desc 
                 limit %s, 25
                 """)
         args = (user_id, (page - 1) * 25)
