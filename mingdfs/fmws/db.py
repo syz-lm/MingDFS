@@ -228,7 +228,7 @@ class File(MySQLBase):
                     user_id = %s
                 limit %s, 25
                 """)
-        args = (user_id, page - 1)
+        args = (user_id, (page - 1) * 25)
 
         results = self.mysql_pool.query(sql, args)
         if results != None and len(results) != 0:
