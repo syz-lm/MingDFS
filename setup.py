@@ -21,7 +21,8 @@ setup(
         "gevent",
         "psutil",
         "requests",
-        "pycrypto"
+        "pycrypto",
+        "requests-toolbelt"
     ],
     entry_points = """
     [console_scripts]

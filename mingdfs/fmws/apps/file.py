@@ -12,6 +12,7 @@ from decimal import Decimal
 import base64
 from mingdfs.utils import crypt_number, encrypt
 import json
+from requests_toolbelt import MultipartEncoder
 
 
 FILE_BP = Blueprint('file_bp', __name__)
@@ -74,7 +75,6 @@ def upload():
                 method = u['method']
                 f = open(save_path, 'rb')
                 url = u['url'] % (host_name, port)
-                files = {'upload_file_name': f}
                 form_data = {
                     'user_id': user_id,
                     'third_user_id': third_user_id,
@@ -95,7 +95,14 @@ def upload():
                 if q != 0:
                     key += '0' * q
                 playload = encrypt(key, json.dumps(form_data)).decode()
-                r = requests.request(method, url, data={"playload": playload}, files=files)
+                m = MultipartEncoder(
+                    fields={
+                        "playload": playload,
+                        "upload_file_name": (my_file.filename, f, guess_type(my_file.filename)[0] or "application/octet-stream")
+                    }
+                )
+
+                r = requests.request(method, url, data=m, headers={'Content-Type': m.content_type})
                 r.raise_for_status()
                 if r.json()['status'] != 0:
                     add_time = int(time.time())
