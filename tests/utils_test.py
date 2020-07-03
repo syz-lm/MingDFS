@@ -11,5 +11,4 @@ class Test(TestCase):
 
     def test_dump_hosts(self):
         ih = load_hosts()
-        ih['127.0.1.1'].add('asdfsafas')
         dump_hosts(ih)

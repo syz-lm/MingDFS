@@ -62,6 +62,7 @@ def add_hosts(ih: dict, ip, host_name):
     if ip in ih:
         ih[ip].add(host_name)
     else:
+        ih[ip] = set()
         ih[ip].add(host_name)
 
     return ih
