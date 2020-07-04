@@ -114,7 +114,7 @@ $ pip3.8 install requests requests-toolbelt
         print('不是服务端发送的数据')
     ```
     
-* 下载文件
+* 下载单个文件
   * api_key: 用户需要到fmws官网注册账号，注册之后，fmws会给用户分配一个api_key
   * category_id: 用户这边的分类id，必须是字符串
   * third_user_id: 用户这边的用户id，必须是字符串
@@ -144,7 +144,42 @@ $ pip3.8 install requests requests-toolbelt
     else:
         raise
     ```
-   
+    
+* 下载多个文件
+  * api_key: 用户需要到fmws官网注册账号，注册之后，fmws会给用户分配一个api_key
+  * category_id: 用户这边的分类id，必须是字符串
+  * third_user_id: 用户这边的用户id，必须是字符串
+  * title: 用户这边的标题，必须是字符串
+  * 请求方法: GET请求表单
+  * 请求url: http://serv_pro:15673/file/download_many, serv_pro:15673由实际的ip和端口替换
+  * 代码例子:
+  
+    ```
+    import requests
+    
+    download_url = 'http://serv_pro:15673/file/download_many'
+    form_data = {
+        'api_key': api_key,
+        'data': [
+            {
+                'third_user_id': third_user_id,
+                'category_id': category_id,
+                'title': title
+            }
+        ]
+    }
+    r = requests.get(download_url, data=form_data)
+    r.raise_for_status()
+    jd = r.json()
+    if jd['status'] == 0:
+        print(None)
+    elif jd['status'] == 1:
+        # 下载地址，也就是原来的数据中增加了一个url
+        print(jd['data']) # [{'third_user_id': xxx, 'category_id': xxx, 'title': xxx, 'url': xxx}]
+    else:
+        raise
+    ```
+    
 * 编辑文件
   * api_key: 用户需要到fmws官网注册账号，注册之后，fmws会给用户分配一个api_key
   * src_category_id: 用户这边的分类id，旧的

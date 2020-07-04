@@ -1,19 +1,20 @@
-from flask import Blueprint, request, send_file, Response
+import base64
+import json
+import logging
+import os
+import time
+import traceback
+from decimal import Decimal
 from mimetypes import guess_type
+
+import requests
+from flask import Blueprint, request
+from requests_toolbelt import MultipartEncoder
+
 from mingdfs.fmws import settings
 from mingdfs.fmws.apps import MYSQL_POOL, REDIS_CLI
 from mingdfs.fmws.db import User, File, RediOP, FRWS
-import requests
-import os
-import traceback
-import logging
-import time
-from decimal import Decimal
-import base64
 from mingdfs.utils import crypt_number, encrypt
-import json
-from requests_toolbelt import MultipartEncoder
-
 
 FILE_BP = Blueprint('file_bp', __name__)
 
@@ -229,6 +230,99 @@ def download():
         return res
         """
 
+
+@FILE_BP.route('/download_many', methods=['GET'])
+def download_many():
+    """下载多个文件
+
+    GET 请求json {"api_key": xxx, "data": [{"third_user_id": xxx, "title": xxx, "category_id": xxx}]}
+        返回 成功 {"data": [
+                    {
+                        "third_user_id": xxx,
+                        "title": xxx,
+                        "category_id": xxx,
+                        "url": xxx
+                    },
+                    ]
+                    "status": 1
+                  }
+            失败 json {"data": [], "status": 0}
+    """
+    if request.method == 'GET':
+        jd = json.loads(request.get_data())
+
+        api_key = jd['api_key']
+        user = User(MYSQL_POOL)
+        user_id = user.get_user_id_by_api_key(api_key)
+        if user_id is None:
+            return {"data": [], "status": 0}
+
+        q = 0
+        fk_l = len(settings.FMWS_KEY)
+        if fk_l < 16:
+            q = 16 - fk_l
+        else:
+            q = fk_l % 16
+        key = settings.FMWS_KEY
+        if q != 0:
+            key += '0' * q
+
+        file = File(MYSQL_POOL)
+
+        u = settings.FRWS_API_TEMPLATE['download']
+        method = u['method']
+
+        for ele in jd['data']:
+            try:
+                third_user_id = ele['third_user_id']
+                title = ele['title']
+                category_id = ele['category_id']
+
+                fhp = file.get_file_extension_host_name_port_ip(user_id, third_user_id, title, category_id)
+                if fhp is None:
+                    return {"data": [], "status": 0}
+                file_extension = fhp['file_extension']
+                host_name = fhp['host_name']
+                port = fhp['port']
+                ip = fhp['ip']
+
+                url = u['url'] % (host_name, port)
+
+                params = {
+                    "user_id": user_id,
+                    "third_user_id": third_user_id,
+                    "title": title,
+                    "category_id": category_id,
+                    "file_extension": file_extension,
+                    'timestamp': crypt_number(time.time())
+                }
+
+                playload = encrypt(key, json.dumps(params)).decode()
+                r = requests.request(method, url, data=playload)
+                r.raise_for_status()
+
+                # XXX: 这条sql可以考虑用file_id去优化
+                if file.edit_last_access_time(user_id, third_user_id, title, category_id, int(time.time())) is False:
+                    print('修改last_access_time失败', request.args)
+
+                jd = r.json()
+                if jd['status'] != 0:
+                    url = 'http://%s:%d/file/download?proof=%s' % (
+                        ip,
+                        port,
+                        base64.standard_b64encode(playload.encode()).decode()
+                    )
+                    logging.debug('download_url: %s', url)
+                    ele['url'] = url
+                else:
+                    ele['url'] = ''
+            except:
+                logging.debug('获取download_url失败', ele)
+                ele['url'] = ''
+    return {
+        "data": jd['data'],
+        "status": 1
+    }
 
 @FILE_BP.route('/delete', methods=['POST'])
 def delete():

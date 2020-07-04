@@ -1,16 +1,14 @@
 import base64
+import json
 import os
-import time
 
 import psutil
 from flask import request, Blueprint, send_from_directory
 
-from mingdfs.frws import settings
-from mingdfs.frws import APP
-from mingdfs.utils import decrypt
-import json
 from mingdfs import frws
-
+from mingdfs.frws import APP
+from mingdfs.frws import settings
+from mingdfs.utils import decrypt
 
 FILE_BP = Blueprint('file_bp', __name__)
 
@@ -142,7 +140,7 @@ def download():
         for save_dir in settings.SAVE_DIRS:
             file_path = save_dir + os.path.sep + file_name
             if os.path.exists(file_path):
-                frws.REDIS_CLI.set(req_body, file_name)
+                frws.REDIS_CLI.set(req_body, file_name, 60)
                 return {"data": [], "status": 1}
         return {"data": [], "status": 0}
     elif request.method == 'GET':
