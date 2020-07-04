@@ -6,6 +6,7 @@ import time
 import traceback
 from decimal import Decimal
 from mimetypes import guess_type
+from threading import Thread
 
 import requests
 from flask import Blueprint, request
@@ -231,6 +232,55 @@ def download():
         """
 
 
+def _download_one(ele, file, u, user_id, key, method):
+    try:
+        third_user_id = ele['third_user_id']
+        title = ele['title']
+        category_id = ele['category_id']
+
+        fhp = file.get_file_extension_host_name_port_ip(user_id, third_user_id, title, category_id)
+        if fhp is None:
+            return {"data": [], "status": 0}
+        file_extension = fhp['file_extension']
+        host_name = fhp['host_name']
+        port = fhp['port']
+        ip = fhp['ip']
+
+        url = u['url'] % (host_name, port)
+
+        params = {
+            "user_id": user_id,
+            "third_user_id": third_user_id,
+            "title": title,
+            "category_id": category_id,
+            "file_extension": file_extension,
+            'timestamp': crypt_number(time.time())
+        }
+
+        playload = encrypt(key, json.dumps(params)).decode()
+        r = requests.request(method, url, data=playload)
+        r.raise_for_status()
+
+        # XXX: 这条sql可以考虑用file_id去优化
+        if file.edit_last_access_time(user_id, third_user_id, title, category_id, int(time.time())) is False:
+            print('修改last_access_time失败', request.args)
+
+        jd = r.json()
+        if jd['status'] != 0:
+            url = 'http://%s:%d/file/download?proof=%s' % (
+                ip,
+                port,
+                base64.standard_b64encode(playload.encode()).decode()
+            )
+            logging.debug('download_url: %s', url)
+            ele['url'] = url
+        else:
+            ele['url'] = ''
+    except:
+        logging.debug('获取download_url失败', ele)
+        ele['url'] = ''
+
+
 @FILE_BP.route('/download_many', methods=['GET'])
 def download_many():
     """下载多个文件
@@ -272,53 +322,18 @@ def download_many():
         u = settings.FRWS_API_TEMPLATE['download']
         method = u['method']
 
+        if len(jd['data']) > 10:
+            return {"data": [], "status": 0}
+
+        tasks = []
         for ele in jd['data']:
-            try:
-                third_user_id = ele['third_user_id']
-                title = ele['title']
-                category_id = ele['category_id']
+            task = Thread(target=_download_one, args=(ele, file, u, user_id, key, method))
+            tasks.append(task)
+            task.start()
 
-                fhp = file.get_file_extension_host_name_port_ip(user_id, third_user_id, title, category_id)
-                if fhp is None:
-                    return {"data": [], "status": 0}
-                file_extension = fhp['file_extension']
-                host_name = fhp['host_name']
-                port = fhp['port']
-                ip = fhp['ip']
+        for task in tasks:
+            task.join()
 
-                url = u['url'] % (host_name, port)
-
-                params = {
-                    "user_id": user_id,
-                    "third_user_id": third_user_id,
-                    "title": title,
-                    "category_id": category_id,
-                    "file_extension": file_extension,
-                    'timestamp': crypt_number(time.time())
-                }
-
-                playload = encrypt(key, json.dumps(params)).decode()
-                r = requests.request(method, url, data=playload)
-                r.raise_for_status()
-
-                # XXX: 这条sql可以考虑用file_id去优化
-                if file.edit_last_access_time(user_id, third_user_id, title, category_id, int(time.time())) is False:
-                    print('修改last_access_time失败', request.args)
-
-                jd = r.json()
-                if jd['status'] != 0:
-                    url = 'http://%s:%d/file/download?proof=%s' % (
-                        ip,
-                        port,
-                        base64.standard_b64encode(playload.encode()).decode()
-                    )
-                    logging.debug('download_url: %s', url)
-                    ele['url'] = url
-                else:
-                    ele['url'] = ''
-            except:
-                logging.debug('获取download_url失败', ele)
-                ele['url'] = ''
     return {
         "data": jd['data'],
         "status": 1
