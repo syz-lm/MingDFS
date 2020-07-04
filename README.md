@@ -113,7 +113,7 @@ $ pip3.8 install requests requests-toolbelt
     else:
         print('不是服务端发送的数据')
     ```
-
+    
 * 下载文件
   * api_key: 用户需要到fmws官网注册账号，注册之后，fmws会给用户分配一个api_key
   * category_id: 用户这边的分类id，必须是字符串
@@ -122,33 +122,69 @@ $ pip3.8 install requests requests-toolbelt
   * 请求方法: GET请求表单
   * 请求url: http://serv_pro:15673/file/download, serv_pro:15673由实际的ip和端口替换
   * 代码例子:
+    
+    ```
+    import requests
+    
+    download_url = 'http://serv_pro:15673/file/download'
+    form_data = {
+        'api_key': api_key,
+        'third_user_id': third_user_id,
+        'category_id': category_id,
+        'title': title
+    }
+    r = requests.get(download_url, data=form_data)
+    r.raise_for_status()
+    jd = r.json()
+    if jd['status'] == 0:
+        print(None)
+    elif jd['status'] == 1:
+        # 下载地址
+        print(jd['data'][0]['url'])
+    else:
+        raise
+    ```
+   
+* 编辑文件
+  * api_key: 用户需要到fmws官网注册账号，注册之后，fmws会给用户分配一个api_key
+  * src_category_id: 用户这边的分类id，旧的
+  * src_third_user_id: 用户这边的用户id, 旧的
+  * src_title: 用户这边的标题，旧的
+  * src_file_extension: 文件的扩展名，旧的
+  * new_category_id: 用户这边的分类id，新的
+  * new_third_user_id: 用户这边的用户id, 新的
+  * new_title: 用户这边的标题，新的
+  * new_file_extension: 文件的扩展名，新的
+  * upload_file_name: 此为上传文件的名称，用于写在`<input type="file" name="upload_file_name">`，可选参数，带了就修改文件内容，不带只是修改文件属性
+  * 请求方法: POST请求表单
+  * 请求url: http://serv_pro:15673/file/edit, serv_pro:15673由实际的ip和端口替换
   
     ```
-    $.ajax({
-            type: 'GET',
-            url: "/file/download",
-            data: {
-                'api_key': api_key,
-                'third_user_id': third_user_id,
-                'title': title,
-                'category_id': category_id
-            },
-            cache: false,
-            contentType: "application/x-www-form-urlencoded",
-            dataType: "json",
-            success: function (data) {
-                // 如果status为1则表示获取下载url成功
-                if (data.status == 1) {
-                    var url = data.data[0]['url'];
-                    // 用浏览器打开这个url浏览器就会自动下载该文件
-                    window.open(url);
-                } else {
-                    alert('获取失败');
-                }
-            },
-            error: function(err) {
-                alert('网络错误');
-            },
-            async: true,
-        });
+    import requests
+    from requests_toolbelt import MultipartEncoder
+    from mimetypes import guess_type
+    
+    
+    file_name = '你上传文件的文件名'
+    file_path = '你上传文件的文件路径(包含文件名)'
+    
+    m = MultipartEncoder(fields={
+        'api_key': api_key,
+        'src_category_id': str(category_id),
+        'src_third_user_id': str(third_user_id),
+        'src_title': title,
+        'src_file_extension': str(file_extension),
+        'new_category_id': str(new_category_id),
+        'new_third_user_id': str(new_third_user_id),
+        'new_title': new_title,
+        'new_file_extension': str(new_file_extension),
+        #'upload_file_name': (file_name, open(file_path, 'rb'), guess_type(file_name)[0] or "application/octet-stream")
+    })
+    r = requests.post(upload_url, data=m, headers={'Content-Type': m.content_type})
+    r.raise_for_status()
+    jd = r.json()
+    if jd['status'] != 0:
+        print('修改成功')
+    else:
+        print('修改失败')
     ```
