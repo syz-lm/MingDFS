@@ -6,6 +6,8 @@ FMWS_HOST_NAME = 'fmws0'
 FMWS_IP = '127.0.0.1'
 FMWS_PORT = 15675
 
+BACKUP_DIR = '/mnt/hgfs/mingdfs/frws_backup'
+
 SAVE_DIRS = [
     '/mnt/hgfs/mingdfs/frws'
 ]

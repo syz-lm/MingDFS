@@ -58,6 +58,10 @@ FRWS_API_TEMPLATE = {
     'stat': {
         'method': 'get',
         'url': 'http://%s:%d/file/stat'
+    },
+    'delete_rollback': {
+        'method': 'get',
+        'url': 'http://%s:%d/file/delete_rollback'
     }
 }
 

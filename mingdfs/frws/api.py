@@ -1,6 +1,8 @@
 import base64
 import json
 import os
+import shutil
+import traceback
 
 import psutil
 from flask import request, Blueprint, send_from_directory
@@ -225,28 +227,31 @@ def edit():
         new_file_extension = form_data['new_file_extension']
         new_third_user_id = form_data['new_third_user_id']
 
+        src_file_name = str(user_id) + '_' + str(src_third_user_id) + '_' + \
+                        src_title + \
+                        '_' + str(src_category_id)
+        src_file_name = base64.standard_b64encode(src_file_name.encode()).decode()
+        src_file_name = base64.standard_b64encode(src_file_name.encode()).decode()
+
+        if src_file_extension != '':
+            src_file_name = src_file_name + "." + src_file_extension
+
+        new_file_name = str(user_id) + '_' + str(new_third_user_id) + '_' + \
+                        new_title + \
+                        '_' + str(new_category_id)
+        new_file_name = base64.standard_b64encode(new_file_name.encode()).decode()
+        new_file_name = base64.standard_b64encode(new_file_name.encode()).decode()
+
+        if new_file_extension != '':
+            new_file_name = new_file_name + "." + new_file_extension
+
+        if src_file_name == new_file_name:
+            return {"data": [], "status": 0}
+
         for save_dir in settings.SAVE_DIRS:
-            src_file_name = str(user_id) + '_' + str(src_third_user_id) + '_' + \
-                                 src_title + \
-                                 '_' + str(src_category_id)
-            src_file_name = base64.standard_b64encode(src_file_name.encode()).decode()
-            src_file_name = base64.standard_b64encode(src_file_name.encode()).decode()
-
-            if src_file_extension != '':
-                src_file_name = src_file_name + "." + src_file_extension
-
             src_save_file_name = save_dir + os.path.sep + src_file_name
             if not os.path.exists(src_save_file_name):
                 continue
-
-            new_file_name = str(user_id) + '_' + str(new_third_user_id) + '_' + \
-                                 new_title + \
-                                 '_' + str(new_category_id)
-            new_file_name = base64.standard_b64encode(new_file_name.encode()).decode()
-            new_file_name = base64.standard_b64encode(new_file_name.encode()).decode()
-
-            if new_file_extension != '':
-                new_file_name = new_file_name + "." + new_file_extension
 
             new_save_file_name = save_dir + os.path.sep + new_file_name
             if os.path.exists(new_save_file_name):
@@ -264,25 +269,28 @@ def edit():
 
 @FILE_BP.route('/delete', methods=['POST'])
 def delete():
-    """删除文件
+    """删除文件, post用于移动文件到备份区
 
-    GET 请求加密的form表单 {"user_id": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx, "file_extension": xxx}
+    POST 请求加密的form表单 {"user_id": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx, "file_extension": xxx, "is_routine": xxx}
         返回json 成功 {"data": [], "status": 0}
                 失败 {"data": [], "status": 1}
+
+    XXX: 如果 is_routine 为1 则代表使用事务，0则代表不使用事务。使用事务的可以进行删除回滚，以及删除确认。
     """
+    q = 0
+    fk_l = len(settings.FMWS_KEY)
+    if fk_l < 16:
+        q = 16 - fk_l
+    else:
+        q = fk_l % 16
+    key = settings.FMWS_KEY
+    if q != 0:
+        key += '0' * q
+
     if request.method == 'POST':
         try:
             req_body = request.get_data().decode()
 
-            q = 0
-            fk_l = len(settings.FMWS_KEY)
-            if fk_l < 16:
-                q = 16 - fk_l
-            else:
-                q = fk_l % 16
-            key = settings.FMWS_KEY
-            if q != 0:
-                key += '0' * q
             form_data = json.loads(decrypt(key, req_body))
 
             user_id = form_data['user_id']
@@ -290,6 +298,7 @@ def delete():
             title = form_data['title']
             category_id = form_data['category_id']
             file_extension = form_data['file_extension']
+            is_routine = form_data['is_routine']
 
             for save_dir in settings.SAVE_DIRS:
                 file_name = str(user_id) + '_' + str(third_user_id) + '_' + title + \
@@ -301,16 +310,90 @@ def delete():
 
                 save_file_name = save_dir + os.path.sep + file_name
                 if os.path.exists(save_file_name):
-                    try:
-                        os.remove(save_file_name)
-                        return {"data": [], "status": 1}
-                    except Exception as e:
-                        print('删除文件失败', save_file_name, str(e))
-                        return {"data": [],  'status': 0}
+                    if is_routine == 1:
+                        try:
+                            backup_path = os.path.sep.join([settings.BACKUP_DIR, file_name])
+                            shutil.move(save_file_name, backup_path)
+                            frws.REDIS_CLI.set(file_name, save_file_name)  # 等待删除确认，用于回滚删除事务
+                            return {"data": [], "status": 1}
+                        except:
+                            print(traceback.format_exc())
+                            print('移动文件失败', save_file_name)
+                            return {"data": [], 'status': 0}
+                    elif is_routine == 0:
+                        try:
+                            os.remove(save_file_name)
+                            return {"data": [], "status": 1}
+                        except:
+                            print(traceback.format_exc())
+                            print('删除文件失败', save_file_name)
+                            return {"data": [], "status": 0}
+                    raise
 
             return {"data": [], "status": 0}
         except:
-            import traceback
+            print(traceback.format_exc())
+
+
+@FILE_BP.route('/delete_rollback', methods=['GET'])
+def delete_rollback():
+    """，get用于删除确认，一旦确认成功，就将备份区的文件永久删除，
+    若确认失败，就将备份区的文件还原到原先的位置。
+
+    GET 请求加密的form表单 {"user_id": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx,
+                          "file_extension": xxx, "ack_status": xxx}
+        返回json 成功 {"data": [], "status": 0}
+                失败 {"data": [], "status": 1}
+
+    XXX: ack_status 为1 代表确认成功，0为确认失败
+    """
+    q = 0
+    fk_l = len(settings.FMWS_KEY)
+    if fk_l < 16:
+        q = 16 - fk_l
+    else:
+        q = fk_l % 16
+    key = settings.FMWS_KEY
+    if q != 0:
+        key += '0' * q
+
+    if request.method == 'GET':
+        try:
+            req_body = request.get_data().decode()
+
+            form_data = json.loads(decrypt(key, req_body))
+            user_id = form_data['user_id']
+            third_user_id = form_data['third_user_id']
+            title = form_data['title']
+            category_id = form_data['category_id']
+            file_extension = form_data['file_extension']
+            ack_status = form_data['ack_status']
+
+            file_name = str(user_id) + '_' + str(third_user_id) + '_' + title + \
+                        '_' + str(category_id)
+            file_name = base64.standard_b64encode(file_name.encode()).decode()
+            file_name = base64.standard_b64encode(file_name.encode()).decode()
+
+            if file_extension != '':
+                file_name = file_name + "." + file_extension
+
+            backup_path = os.path.sep.join([settings.BACKUP_DIR, file_name])
+            try:
+                if ack_status == 1:
+                    os.remove(backup_path)
+                elif ack_status == 0:
+                    save_file_path = frws.REDIS_CLI.get(file_name).decode()
+                    shutil.move(backup_path, save_file_path)
+                else:
+                    raise
+
+                frws.REDIS_CLI.delete(file_name)
+            except:
+                print(traceback.format_exc())
+                return {"data": [], "status": 0}
+
+            return {"data": [], "status": 1}
+        except:
             print(traceback.format_exc())
 
 

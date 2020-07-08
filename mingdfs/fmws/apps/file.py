@@ -334,10 +334,8 @@ def download_many():
         for task in tasks:
             task.join()
 
-    return {
-        "data": jd['data'],
-        "status": 1
-    }
+    return {"data": jd['data'], "status": 1}
+
 
 @FILE_BP.route('/delete', methods=['POST'])
 def delete():
@@ -376,7 +374,8 @@ def delete():
             "title": title,
             "category_id": category_id,
             "file_extension": file_extension,
-            'timestamp': crypt_number(time.time())
+            'timestamp': crypt_number(time.time()),
+            'is_routine': 0
         }
         q = 0
         fk_l = len(settings.FMWS_KEY)
@@ -479,10 +478,11 @@ def edit():
                 method = u['method']
                 url = u['url'] % (host_name, port)
                 r = requests.request(method, url, data=playload, headers={'Connection': 'close'})
+                r.raise_for_status()
             else:
                 redis_op = RediOP(REDIS_CLI)
-                host_name, port = redis_op.get_best_frws_host_name_port()
-                if host_name is None and port is None:
+                best_host_name, best_port = redis_op.get_best_frws_host_name_port()
+                if best_host_name is None and best_port is None:
                     return {"data": [], "status": 0}
 
                 save_path = settings.FMWS_CACHE + os.path.sep + my_file.filename
@@ -496,10 +496,29 @@ def edit():
                 f = open(save_path, 'rb')
                 files = {'upload_file_name': f}
 
+                u = settings.FRWS_API_TEMPLATE['delete']
+                method = u['method']
+                url = u['url'] % (host_name, port)
+                form_data = {
+                    'user_id': user_id,
+                    'third_user_id': src_third_user_id,
+                    'title': src_title,
+                    'category_id': src_category_id,
+                    'file_extension': src_file_extension,
+                    'timestamp': crypt_number(time.time()),
+                    'is_routine': 1
+                }
+                playload = encrypt(key, json.dumps(form_data)).decode()
+                r = requests.request(method, url, data=playload)
+                r.raise_for_status()
+                if r.json()['status'] == 0:
+                    return {"data": [], "status": 0}
+
                 u = settings.FRWS_API_TEMPLATE['upload']
 
                 method = u['method']
-                url = u['url'] % (host_name, port)
+                url = u['url'] % (best_host_name, best_port)
+
                 form_data = {
                     'user_id': user_id,
                     'third_user_id': new_third_user_id,
@@ -510,34 +529,70 @@ def edit():
                     'timestamp': crypt_number(time.time())
                 }
                 playload = encrypt(key, json.dumps(form_data)).decode()
-                r = requests.request(method, url, data={'playload': playload}, files=files)
-                r.raise_for_status()
-                if r.json()['status'] == 0:
+                m = MultipartEncoder(
+                    fields={
+                        "playload": playload,
+                        "upload_file_name": (
+                        my_file.filename, f, guess_type(my_file.filename)[0] or "application/octet-stream")
+                    }
+                )
+                try:
+                    r = requests.request(method, url, data=m, headers={'Content-Type': m.content_type})
+                    r.raise_for_status()
+                    if r.json()['status'] == 0:
+                        raise
+                except:
+                    print('删除文件成功，上传文件失败，正在回滚文件')
+                    try:
+                        u = settings.FRWS_API_TEMPLATE['delete_rollback']
+                        method = u['method']
+                        url = u['url'] % (host_name, port)
+                        form_data = {
+                            'user_id': user_id,
+                            'third_user_id': src_third_user_id,
+                            'title': src_title,
+                            'category_id': src_category_id,
+                            'file_extension': src_file_extension,
+                            'timestamp': crypt_number(time.time()),
+                            'ack_status': 0,
+                        }
+                        playload = encrypt(key, json.dumps(form_data)).decode()
+                        r = requests.request(method, url, data=playload)
+                    except:
+                        print(traceback.format_exc())
+                        print('回滚文件失败', src_third_user_id, src_title, src_category_id, host_name, port)
+                    finally:
+                        return {"data": [], "status": 0}
+
+                try:
+                    # 消息确认
+                    u = settings.FRWS_API_TEMPLATE['delete_rollback']
+                    method = u['method']
+                    url = u['url'] % (host_name, port)
+                    form_data = {
+                        'user_id': user_id,
+                        'third_user_id': src_third_user_id,
+                        'title': src_title,
+                        'category_id': src_category_id,
+                        'file_extension': src_file_extension,
+                        'timestamp': crypt_number(time.time()),
+                        'ack_status': 1
+                    }
+                    playload = encrypt(key, json.dumps(form_data)).decode()
+                    r = requests.request(method, url, data=playload)
+                    r.raise_for_status()
+                except:
+                    print('消息确认失败', src_third_user_id, src_title, src_category_id, host_name, port)
                     return {"data": [], "status": 0}
 
-                u = settings.FRWS_API_TEMPLATE['delete']
-                method = u['method']
-                url = u['url'] % (host_name, port)
-                form_data = {
-                    'user_id': user_id,
-                    'third_user_id': src_third_user_id,
-                    'title': src_title,
-                    'category_id': src_category_id,
-                    'file_extension': src_file_extension,
-                    'timestamp': crypt_number(time.time())
-                }
-                playload = encrypt(key, json.dumps(form_data)).decode()
-                r = requests.request(method, url, data=playload)
-
-            r.raise_for_status()
             if r.json()['status'] != 0:
                 file = File(MYSQL_POOL)
                 if not file.edit_file(user_id, src_third_user_id, new_third_user_id,
                                       src_title, new_title, src_category_id, new_category_id,
                                       int(time.time()), src_file_extension, new_file_extension, frws_id):
                     print("frws文件已经修改成功，但是数据库中修改失败", user_id, src_third_user_id, new_third_user_id,
-                                      src_title, new_title, src_category_id, new_category_id,
-                                      int(time.time()), src_file_extension, new_file_extension, host_name, port)
+                          src_title, new_title, src_category_id, new_category_id,
+                          int(time.time()), src_file_extension, new_file_extension, host_name, port)
                     return {"data": [], "status": 0}
                 else:
                     return {"data": [], "status": 1}

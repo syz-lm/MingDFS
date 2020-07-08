@@ -61,6 +61,9 @@ def main(log_level=logging.DEBUG, debug=False):
 
     parser.add_argument('--PROCESS_TYPE', type=int, default=0, help='输入进程类型：0: frws, 1: register_frws')
 
+    parser.add_argument('--BACKUP_DIR', type=str, default=settings.BACKUP_DIR,
+                        help='输入备份文件的路径: 默认, /mnt/hgfs/mingdfs/frws_backup')
+
     flags = parser.parse_args()
     try:
         _read_command_line(flags, debug)
@@ -86,12 +89,13 @@ def _read_command_line(flags, debug):
 
     settings.REDIS_CONFIG = flags.REDIS_CONFIG
     settings.SECRET_KEY = flags.SECRET_KEY
+    settings.BACKUP_DIR = flags.BACKUP_DIR
 
     logging.debug(
-        'HOST: %s, IP: %s, PORT: %s, HOST_NAME: %s, FMWS_HOST_NAME: %s, FMWS_IP: %s, FMWS_PORT: %s, FMWS_KEY: %s, FRWS_KEY: %s, SAVE_DIRS: %s, REDIS_CONFIG: %s, SECRET_KEY: %s',
+        'HOST: %s, IP: %s, PORT: %s, HOST_NAME: %s, FMWS_HOST_NAME: %s, FMWS_IP: %s, FMWS_PORT: %s, FMWS_KEY: %s, FRWS_KEY: %s, SAVE_DIRS: %s, REDIS_CONFIG: %s, SECRET_KEY: %s, BACKUP_DIR: %s',
         settings.HOST, settings.IP, settings.PORT, settings.HOST_NAME, settings.FMWS_HOST_NAME, settings.FMWS_IP,
         settings.FMWS_PORT, settings.FMWS_KEY,
-        settings.FRWS_KEY, settings.SAVE_DIRS, str(settings.REDIS_CONFIG), settings.SECRET_KEY)
+        settings.FRWS_KEY, settings.SAVE_DIRS, str(settings.REDIS_CONFIG), settings.SECRET_KEY, settings.BACKUP_DIR)
 
     if settings.IP == '0.0.0.0':
         logging.error('IP不能为0.0.0.0，必须是外网地址')
@@ -104,6 +108,9 @@ def _read_command_line(flags, debug):
         for save_dir in settings.SAVE_DIRS:
             if not os.path.exists(save_dir):
                 os.makedirs(save_dir)  # mkdir -p
+
+        if not os.path.exists(settings.BACKUP_DIR):
+            os.makedirs(settings.BACKUP_DIR)
 
     def _hello():
         if 0 == register_frws(settings.HOST_NAME, settings.IP, settings.PORT,
@@ -147,4 +154,4 @@ def _read_command_line(flags, debug):
 
 
 if __name__ == '__main__':
-    main(debug=False)
+    main(debug=True)
