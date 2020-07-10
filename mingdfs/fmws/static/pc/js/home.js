@@ -96,7 +96,8 @@ $(".popu_menu > .layout > .download").click(function () {
             'api_key': api_key,
             'third_user_id': third_user_id,
             'title': title,
-            'category_id': category_id
+            'category_id': category_id,
+            'expire': 9000
         },
         cache: false,
         contentType: "application/x-www-form-urlencoded",
@@ -146,7 +147,8 @@ $(".popu_menu > .layout > .look").click(function () {
             'api_key': api_key,
             'third_user_id': third_user_id,
             'title': title,
-            'category_id': category_id
+            'category_id': category_id,
+            'expire': 9000
         },
         cache: false,
         contentType: "application/x-www-form-urlencoded",
