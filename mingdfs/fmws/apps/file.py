@@ -174,7 +174,7 @@ def download():
             "title": title,
             "category_id": category_id,
             "file_extension": file_extension,
-            'timestamp': crypt_number(time.time())
+            'timestamp': crypt_number(time.time() + 9000)
         }
 
         q = 0
@@ -254,7 +254,7 @@ def _download_one(ele, file, u, user_id, key, method):
             "title": title,
             "category_id": category_id,
             "file_extension": file_extension,
-            'timestamp': crypt_number(time.time())
+            'timestamp': crypt_number(time.time() + 9000)
         }
 
         playload = encrypt(key, json.dumps(params)).decode()
