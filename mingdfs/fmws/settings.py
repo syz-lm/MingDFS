@@ -1,3 +1,5 @@
+import os
+
 # session 盐值
 SECRET_KEY = 'mm5201314'
 
@@ -65,9 +67,11 @@ FRWS_API_TEMPLATE = {
     }
 }
 
-
 CACHE_FRWS_STAT_INFOR_KEY = 'frws_stat_infor'
 CACHE_FRWS_COMPUTERS_KEY = 'frws_computers'
 CACHE_STAT_INTERVAL_KEY = 'stat_interval'
 
 CACHE_STAT_BEST_FRWS_KEY = 'best_frws'
+
+SSL_KEYFILE = os.path.split(os.path.realpath(__file__))[0] + os.sep + "server.key"
+SSL_CERTFILE = os.path.split(os.path.realpath(__file__))[0] + os.sep + "server.crt"

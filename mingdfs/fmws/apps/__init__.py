@@ -1,5 +1,3 @@
-from gevent.pywsgi import WSGIServer
-
 import logging
 import traceback
 from datetime import timedelta
@@ -7,11 +5,12 @@ from datetime import timedelta
 from flask import Flask, request, abort
 # 设置APP和SESSION
 from flask_session import Session
+from gevent.pywsgi import WSGIServer
 from redis import StrictRedis
 
 from mingdfs.db_mysql import MySQLPool
 from mingdfs.fmws import settings
-from mingdfs.utils import pc_or_mobile, PC, MOBILE
+from mingdfs.utils import pc_or_mobile, MOBILE
 
 REDIS_CLI: StrictRedis = None
 MYSQL_POOL: MySQLPool = None
@@ -95,7 +94,7 @@ def start_fmws(host, port):
     try:
         _init_bp()
 
-        http_server = WSGIServer((host, port), APP)
+        http_server = WSGIServer((host, port), APP, keyfile=settings.SSL_KEYFILE, certfile=settings.SSL_CERTFILE)
         http_server.serve_forever()
     except Exception as e:
         logging.error(e)
@@ -119,7 +118,7 @@ def debug(host, port):
     global APP
     _init_bp()
 
-    APP.run(host=host, port=port, threaded=True)
+    APP.run(host=host, port=port, threaded=True, ssl_context=(settings.SSL_CERTFILE, settings.SSL_KEYFILE))
 
 
 if __name__ == '__main__':

@@ -37,7 +37,7 @@ def start_frws(host, port):
     global APP
     try:
         init_redis_cli()
-        http_server = WSGIServer((host, port), APP)
+        http_server = WSGIServer((host, port), APP, keyfile=settings.SSL_KEYFILE, certfile=settings.SSL_CERTFILE)
         http_server.serve_forever()
     except Exception as e:
         logging.error(e)
@@ -50,7 +50,7 @@ def start_frws(host, port):
 def debug_frws(host, port):
     global APP
     init_redis_cli()
-    APP.run(host, port, threaded=True)
+    APP.run(host, port, threaded=True, ssl_context=(settings.SSL_CERTFILE, settings.SSL_KEYFILE))
 
 
 def register_frws(host_name, ip, port, fmws_key, fmws_host_name, fmws_port, save_dirs, frws_key):
@@ -63,7 +63,7 @@ def register_frws(host_name, ip, port, fmws_key, fmws_host_name, fmws_port, save
         "fmws_key": fmws_key
     }
     try:
-        api = 'http://%s:%d/frws_manager/register_frws' % (fmws_host_name, fmws_port)
+        api = 'https://%s:%d/frws_manager/register_frws' % (fmws_host_name, fmws_port)
 
         r = requests.get(api, data=form_data)
         r.raise_for_status()

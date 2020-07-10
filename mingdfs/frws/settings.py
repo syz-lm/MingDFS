@@ -1,3 +1,5 @@
+import os
+
 HOST = '0.0.0.0'
 IP = '127.0.0.1'
 PORT = 15676
@@ -23,3 +25,6 @@ REDIS_CONFIG = {
 }
 
 SECRET_KEY = 'mm5201314'
+
+SSL_KEYFILE = os.path.split(os.path.realpath(__file__))[0] + os.sep + "server.key"
+SSL_CERTFILE = os.path.split(os.path.realpath(__file__))[0] + os.sep + "server.crt"

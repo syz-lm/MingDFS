@@ -1,11 +1,10 @@
-from flask import Blueprint, request
-from mingdfs.fmws import settings
-from mingdfs.utils import load_hosts, dump_hosts, add_hosts
 import requests
-from mingdfs.fmws import apps
-from mingdfs.fmws.db import FRWS
+from flask import Blueprint, request
 
-import logging
+from mingdfs.fmws import apps
+from mingdfs.fmws import settings
+from mingdfs.fmws.db import FRWS
+from mingdfs.utils import load_hosts, dump_hosts, add_hosts
 
 FRWS_MANAGER_BP = Blueprint('frws_manager_bp', __name__)
 
@@ -36,7 +35,7 @@ def register_frws():
         if fmws_key != settings.FMWS_KEY:
             return {"data": [], "status": 0}
 
-        hello_api = 'http://%s:%s/hello' % (ip, port)
+        hello_api = 'https://%s:%s/hello' % (ip, port)
         try:
             r = requests.get(hello_api, data={"frws_key": settings.FRWS_KEY})
             r.raise_for_status()

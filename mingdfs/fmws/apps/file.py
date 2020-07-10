@@ -196,7 +196,7 @@ def download():
 
         jd = r.json()
         if jd['status'] != 0:
-            url = 'http://%s:%d/file/download?proof=%s' % (
+            url = 'https://%s:%d/file/download?proof=%s' % (
                 ip,
                 port,
                 base64.standard_b64encode(playload.encode()).decode()
@@ -267,7 +267,7 @@ def _download_one(ele, file, u, user_id, key, method):
 
         jd = r.json()
         if jd['status'] != 0:
-            url = 'http://%s:%d/file/download?proof=%s' % (
+            url = 'https://%s:%d/file/download?proof=%s' % (
                 ip,
                 port,
                 base64.standard_b64encode(playload.encode()).decode()
