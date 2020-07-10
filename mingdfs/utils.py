@@ -110,7 +110,7 @@ my_crypt_number_dict = {
     "8": "h",
     "9": "i",
     "0": "j",
-    ".": "k。",
+    ".": "k",
 
     "k": ".",
     "j": "0",
@@ -136,7 +136,7 @@ def crypt_number(num):
 
 def decrypt_number(msg):
     b = list(msg)
-    for i in range(len(b) - 1):
+    for i in range(len(b)):
         if b[i] == "":
             continue
         b[i] = my_crypt_number_dict[b[i]]
@@ -187,11 +187,11 @@ def decrypt(key, text):
 
 
 if __name__ == '__main__':
-    key = '1234567890123456'
-    msg = encrypt(key, 'hello')
-    print('msg:', msg)
-    my = decrypt(key, msg)
-    print('my:', msg)
+    # key = '1234567890123456'
+    # msg = encrypt(key, 'hello')
+    # print('msg:', msg)
+    # my = decrypt(key, msg)
+    # print('my:', msg)
 
     en = crypt_number(123.4)
     print(en)
