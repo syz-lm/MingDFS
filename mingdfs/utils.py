@@ -135,7 +135,7 @@ def crypt_number(num):
     return ''.join(c)
 
 def decrypt_number(msg):
-    b = msg.split('。')
+    b = list(msg)
     for i in range(len(b) - 1):
         if b[i] == "":
             continue
