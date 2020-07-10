@@ -8,7 +8,6 @@ import os
 from mingdfs.fmws.stat_process import start_stat
 
 
-
 def main(log_level=logging.DEBUG, debug=False):
     logging.basicConfig(level=log_level, format='%(levelname)s:%(asctime)s:%(name)s[%(message)s]')
 

@@ -141,7 +141,7 @@ def upload():
 def download():
     """下载文件
 
-    GET 请求url参数 {"api_key": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx}
+    GET 请求url参数 {"api_key": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx, "expire": xxx}
         返回 成功 二进制数据
             失败 json {"data": [], "status": 0}
     """
@@ -150,6 +150,7 @@ def download():
         third_user_id = request.args['third_user_id']
         title = request.args['title']
         category_id = request.args['category_id']
+        expire = request.args['expire']
 
         user = User(MYSQL_POOL)
         user_id = user.get_user_id_by_api_key(api_key)
@@ -174,7 +175,8 @@ def download():
             "title": title,
             "category_id": category_id,
             "file_extension": file_extension,
-            'timestamp': crypt_number(time.time() + 9000)
+            "timestamp": crypt_number(time.time()),
+            'expire': expire
         }
 
         q = 0
@@ -199,7 +201,7 @@ def download():
             url = 'https://%s:%d/file/download?proof=%s' % (
                 ip,
                 port,
-                base64.standard_b64encode(playload.encode()).decode()
+                jd['data'][0]['proof']
             )
             logging.debug('download_url: %s', url)
 
@@ -237,6 +239,7 @@ def _download_one(ele, file, u, user_id, key, method):
         third_user_id = ele['third_user_id']
         title = ele['title']
         category_id = ele['category_id']
+        expire = ele['expire']
 
         fhp = file.get_file_extension_host_name_port_ip(user_id, third_user_id, title, category_id)
         if fhp is None:
@@ -254,7 +257,8 @@ def _download_one(ele, file, u, user_id, key, method):
             "title": title,
             "category_id": category_id,
             "file_extension": file_extension,
-            'timestamp': crypt_number(time.time() + 9000)
+            'timestamp': crypt_number(time.time()),
+            'expire': expire
         }
 
         playload = encrypt(key, json.dumps(params)).decode()
@@ -270,7 +274,7 @@ def _download_one(ele, file, u, user_id, key, method):
             url = 'https://%s:%d/file/download?proof=%s' % (
                 ip,
                 port,
-                base64.standard_b64encode(playload.encode()).decode()
+                jd['data'][0]['proof']
             )
             logging.debug('download_url: %s', url)
             ele['url'] = url
@@ -285,7 +289,7 @@ def _download_one(ele, file, u, user_id, key, method):
 def download_many():
     """下载多个文件
 
-    GET 请求json {"api_key": xxx, "data": [{"third_user_id": xxx, "title": xxx, "category_id": xxx}]}
+    GET 请求json {"api_key": xxx, "data": [{"third_user_id": xxx, "title": xxx, "category_id": xxx, "expire": xxx}]}
         返回 成功 {"data": [
                     {
                         "third_user_id": xxx,

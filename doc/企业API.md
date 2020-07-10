@@ -46,6 +46,7 @@ $ pip3.8 install requests requests-toolbelt
   * category_id: 用户这边的分类id，必须是字符串
   * third_user_id: 用户这边的用户id，必须是字符串
   * title: 用户这边的标题，必须是字符串
+  * expire: 这个url多长时间失效
   * 请求方法: GET请求表单
   * 请求url: http://serv_pro:15673/file/download, serv_pro:15673由实际的ip和端口替换
   * 代码例子:
@@ -58,7 +59,8 @@ $ pip3.8 install requests requests-toolbelt
         'api_key': api_key,
         'third_user_id': third_user_id,
         'category_id': category_id,
-        'title': title
+        'title': title,
+        'expire': 90
     }
     r = requests.get(download_url, data=form_data)
     r.raise_for_status()
@@ -77,6 +79,7 @@ $ pip3.8 install requests requests-toolbelt
   * category_id: 用户这边的分类id，必须是字符串
   * third_user_id: 用户这边的用户id，必须是字符串
   * title: 用户这边的标题，必须是字符串
+  * expire: 这个url多长时间失效
   * 请求方法: GET请求表单
   * 请求url: http://serv_pro:15673/file/download_many, serv_pro:15673由实际的ip和端口替换
   * 代码例子:
@@ -91,7 +94,8 @@ $ pip3.8 install requests requests-toolbelt
             {
                 'third_user_id': third_user_id,
                 'category_id': category_id,
-                'title': title
+                'title': title,
+                'expire': 90
             }
         ]
     }

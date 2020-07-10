@@ -11,7 +11,7 @@ from flask import request, Blueprint, send_from_directory
 from mingdfs import frws
 from mingdfs.frws import APP
 from mingdfs.frws import settings
-from mingdfs.utils import decrypt, decrypt_number
+from mingdfs.utils import decrypt, decrypt_number, encrypt, crypt_number
 
 FILE_BP = Blueprint('file_bp', __name__)
 
@@ -106,8 +106,8 @@ def download():
 
     POST 请求经过加密过的payload {"user_id": xxx, "third_user_id": xxx,
                                "title": xxx, "category_id": xxx,
-                               "file_extension": xxx, "timestamp": xxx}
-        返回 成功 json {"data": [], "status": 1}
+                               "file_extension": xxx, "timestamp": xxx, "expire": xxx}
+        返回 成功 json {"data": [{"proof": xxx}], "status": 1}
             失败 json {"data": [], "status": 0}
 
     GET 请求url参数 { "payload": xxx}
@@ -133,30 +133,49 @@ def download():
         title = form_data.get('title')
         category_id = form_data.get("category_id")
         file_extension = form_data.get('file_extension')
+        timestamp = form_data.get('timestamp')
+        # TODO
+        expire = float(form_data.get('expire'))
+
         file_name = str(user_id) + '_' + str(third_user_id) + '_' + title + \
                     '_' + str(category_id)
         file_name = base64.standard_b64encode(file_name.encode()).decode()
         file_name = base64.standard_b64encode(file_name.encode()).decode()
         if file_extension != '':
             file_name = file_name + "." + file_extension
-        
+
         for save_dir in settings.SAVE_DIRS:
             file_path = save_dir + os.path.sep + file_name
             if os.path.exists(file_path):
                 # frws.REDIS_CLI.set(req_body, file_name, 60)
-                return {"data": [], "status": 1}
+                q = 0
+                fk_l = len(settings.DOWNLOAD_KEY)
+                if fk_l < 16:
+                    q = 16 - fk_l
+                else:
+                    q = fk_l % 16
+                key = settings.DOWNLOAD_KEY
+                if q != 0:
+                    key += '0' * q
+                now = time.time()
+                form_data['expire'] = crypt_number(now + expire)
+                form_data['timestamp'] = crypt_number(now)
+                payload = encrypt(key, json.dumps(form_data))
+                proof = base64.standard_b64encode(payload).decode()
+
+                return {"data": [{'proof': proof}], "status": 1}
         return {"data": [], "status": 0}
     elif request.method == 'GET':
         proof = request.args.get('proof').encode()
         playload = base64.standard_b64decode(proof).decode()
 
         q = 0
-        fk_l = len(settings.FMWS_KEY)
+        fk_l = len(settings.DOWNLOAD_KEY)
         if fk_l < 16:
             q = 16 - fk_l
         else:
             q = fk_l % 16
-        key = settings.FMWS_KEY
+        key = settings.DOWNLOAD_KEY
         if q != 0:
             key += '0' * q
 
@@ -171,14 +190,15 @@ def download():
                     '_' + str(category_id)
         file_name = base64.standard_b64encode(file_name.encode()).decode()
         file_name = base64.standard_b64encode(file_name.encode()).decode()
-        timestamp = form_data.get('timestamp')
+        expire = decrypt_number(form_data.get('expire'))
+
         if file_extension != '':
             file_name = file_name + "." + file_extension
 
         # if frws.REDIS_CLI.get(playload) != file_name.encode():
         #     return {"data": [], "status": 0}
-        timestamp = decrypt_number(timestamp)
-        if time.time() - timestamp > 0:
+        now = time.time()
+        if expire - now <= 0:
             return {"data": [], "status": 0}
 
         for save_dir in settings.SAVE_DIRS:
@@ -186,8 +206,7 @@ def download():
             if os.path.exists(file_path):
                 return send_from_directory(save_dir, file_name, attachment_filename=file_name)
 
-        return {"data": [], "status": 0}
-
+        raise
 
 @FILE_BP.route('/edit', methods=['POST'])
 def edit():
