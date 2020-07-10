@@ -104,7 +104,7 @@ def upload():
                     }
                 )
 
-                r = requests.request(method, url, data=m, headers={'Content-Type': m.content_type})
+                r = requests.request(method, url, data=m, headers={'Content-Type': m.content_type}, verify=False)
                 r.raise_for_status()
                 if r.json()['status'] != 0:
                     add_time = int(time.time())
@@ -187,7 +187,7 @@ def download():
         if q != 0:
             key += '0' * q
         playload = encrypt(key, json.dumps(params)).decode()
-        r = requests.request(method, url, data=playload)
+        r = requests.request(method, url, data=playload, verify=False)
         r.raise_for_status()
 
         # XXX: 这条sql可以考虑用file_id去优化
@@ -258,7 +258,7 @@ def _download_one(ele, file, u, user_id, key, method):
         }
 
         playload = encrypt(key, json.dumps(params)).decode()
-        r = requests.request(method, url, data=playload)
+        r = requests.request(method, url, data=playload, verify=False)
         r.raise_for_status()
 
         # XXX: 这条sql可以考虑用file_id去优化
@@ -388,7 +388,7 @@ def delete():
             key += '0' * q
         playload = encrypt(key, json.dumps(form_data)).decode()
 
-        r = requests.request(method, url, data=playload, headers={'Connection': 'close'})
+        r = requests.request(method, url, data=playload, headers={'Connection': 'close'}, verify=False)
         r.raise_for_status()
         if r.json()['status'] != 0:
             if file.delete_file(user_id, third_user_id, title, category_id) is not True:
@@ -477,7 +477,7 @@ def edit():
                 u = settings.FRWS_API_TEMPLATE['edit']
                 method = u['method']
                 url = u['url'] % (host_name, port)
-                r = requests.request(method, url, data=playload, headers={'Connection': 'close'})
+                r = requests.request(method, url, data=playload, headers={'Connection': 'close'}, verify=False)
                 r.raise_for_status()
             else:
                 redis_op = RediOP(REDIS_CLI)
@@ -509,7 +509,7 @@ def edit():
                     'is_routine': 1
                 }
                 playload = encrypt(key, json.dumps(form_data)).decode()
-                r = requests.request(method, url, data=playload)
+                r = requests.request(method, url, data=playload, verify=False)
                 r.raise_for_status()
                 if r.json()['status'] == 0:
                     return {"data": [], "status": 0}
@@ -537,7 +537,7 @@ def edit():
                     }
                 )
                 try:
-                    r = requests.request(method, url, data=m, headers={'Content-Type': m.content_type})
+                    r = requests.request(method, url, data=m, headers={'Content-Type': m.content_type}, verify=False)
                     r.raise_for_status()
                     if r.json()['status'] == 0:
                         raise
@@ -557,7 +557,7 @@ def edit():
                             'ack_status': 0,
                         }
                         playload = encrypt(key, json.dumps(form_data)).decode()
-                        r = requests.request(method, url, data=playload)
+                        r = requests.request(method, url, data=playload, verify=False)
                     except:
                         print(traceback.format_exc())
                         print('回滚文件失败', src_third_user_id, src_title, src_category_id, host_name, port)
@@ -579,7 +579,7 @@ def edit():
                         'ack_status': 1
                     }
                     playload = encrypt(key, json.dumps(form_data)).decode()
-                    r = requests.request(method, url, data=playload)
+                    r = requests.request(method, url, data=playload, verify=False)
                     r.raise_for_status()
                 except:
                     print('消息确认失败', src_third_user_id, src_title, src_category_id, host_name, port)

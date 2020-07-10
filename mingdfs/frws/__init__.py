@@ -65,7 +65,7 @@ def register_frws(host_name, ip, port, fmws_key, fmws_host_name, fmws_port, save
     try:
         api = 'https://%s:%d/frws_manager/register_frws' % (fmws_host_name, fmws_port)
 
-        r = requests.get(api, data=form_data)
+        r = requests.get(api, data=form_data, verify=False)
         r.raise_for_status()
         print(r.json()['data'])
         return r.json()['status']

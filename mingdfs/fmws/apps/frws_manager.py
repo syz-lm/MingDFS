@@ -37,7 +37,7 @@ def register_frws():
 
         hello_api = 'https://%s:%s/hello' % (ip, port)
         try:
-            r = requests.get(hello_api, data={"frws_key": settings.FRWS_KEY})
+            r = requests.get(hello_api, data={"frws_key": settings.FRWS_KEY}, verify=False)
             r.raise_for_status()
             if r.json()['status'] != 1:
                 return {"data": [], 'status': 0}
