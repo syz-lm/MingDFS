@@ -1,17 +1,19 @@
-import platform
-import shutil
 import logging
 import os
-from Crypto.Cipher import AES
+import platform
+import shutil
 from binascii import b2a_hex, a2b_hex
+
+from Crypto.Cipher import AES
 
 PC = 1
 MOBILE = 2
 
+
 def _is_mobile(user_agent: str) -> bool:
     if 'iphone' in user_agent \
-        or 'android' in user_agent \
-        or 'micromessenger' in user_agent:
+            or 'android' in user_agent \
+            or 'micromessenger' in user_agent:
         return True
     else:
         return False
@@ -153,7 +155,12 @@ def add_to_16(text):
 # 加密函数
 def encrypt(key, text):
     logging.debug("key: %s", key)
-    key = key.encode('utf-8')
+    if isinstance(key, str):
+        key = key.encode('utf-8')
+    elif isinstance(key, bytes):
+        pass
+    else:
+        raise
     mode = AES.MODE_CBC
     iv = b'qqqqqqqqqqqqqqqq'
     text = add_to_16(text)
@@ -166,7 +173,12 @@ def encrypt(key, text):
 # 解密后，去掉补足的空格用strip() 去掉
 def decrypt(key, text):
     logging.debug("key: %s", key)
-    key = key.encode('utf-8')
+    if isinstance(key, str):
+        key = key.encode('utf-8')
+    elif isinstance(key, bytes):
+        pass
+    else:
+        raise
     iv = b'qqqqqqqqqqqqqqqq'
     mode = AES.MODE_CBC
     cryptos = AES.new(key, mode, iv)
