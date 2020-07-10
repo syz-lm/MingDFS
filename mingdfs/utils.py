@@ -139,7 +139,7 @@ def decrypt_number(msg):
     for i in range(len(b) - 1):
         if b[i] == "":
             continue
-        b[i] = my_crypt_number_dict[b[i] + "。"]
+        b[i] = my_crypt_number_dict[b[i]]
     return float(''.join(b))
 
 # 如果text不足16位的倍数就用空格补足为16位
