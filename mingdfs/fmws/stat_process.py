@@ -1,22 +1,24 @@
-import requests
 import json
-from redis import StrictRedis
-from mingdfs.fmws import settings
-from threading import Thread, Lock
-import time
 import logging
-import traceback
 import pprint
+import time
+import traceback
+from threading import Thread, Lock
+
+import requests
+from redis import StrictRedis
+
+from mingdfs.fmws import settings
 
 LOCK = Lock()
 
 REDIS_CLI = StrictRedis(host=settings.REDIS_CONFIG['host'],
-                            port=settings.REDIS_CONFIG['port'],
-                            db=settings.REDIS_CONFIG['db'],
-                            password=settings.REDIS_CONFIG['passwd'],
-                            socket_timeout=60,
-                            socket_connect_timeout=60,
-                            socket_keepalive=True)
+                        port=settings.REDIS_CONFIG['port'],
+                        db=settings.REDIS_CONFIG['db'],
+                        password=settings.REDIS_CONFIG['passwd'],
+                        socket_timeout=60,
+                        socket_connect_timeout=60,
+                        socket_keepalive=True)
 
 
 def _fetch_request(host_name, port, stats: list):
@@ -29,7 +31,7 @@ def _fetch_request(host_name, port, stats: list):
         form_data = {}
         r = requests.request(method, url, data=form_data,
                              headers={'Connection': 'close'},
-                             timeout=(5, 5))
+                             timeout=(5, 5), verify=False)
         r.raise_for_status()
         j = r.json()
         if j['status'] != 1:
