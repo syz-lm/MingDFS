@@ -134,6 +134,8 @@ $(".popu_menu > .layout > .get_video_first_photo").click(function () {
     var third_user_id = $(".yj_third_user_id").html().trim();
     var file_extension = $(".yj_file_extension").html().trim();
 
+    $(".look_panel").show();
+
     $(".look_panel > .layout > .lp_header > .lp_title").html(title);
 
     $.ajax({
@@ -154,7 +156,8 @@ $(".popu_menu > .layout > .get_video_first_photo").click(function () {
 
             if (data.status == 1) {
                 var url = data.data[0]['url'];
-                window.open(url);
+                $(".look_panel > .layout > .lp_content").attr("src", url);
+                $(".popu_menu").hide();
             } else {
                 alert('获取失败');
             }

@@ -149,12 +149,12 @@ def download():
             if os.path.exists(file_path):
                 # frws.REDIS_CLI.set(req_body, file_name, 60)
                 q = 0
-                fk_l = len(settings.DOWNLOAD_KEY)
+                fk_l = len(settings.OPERA_KEY)
                 if fk_l < 16:
                     q = 16 - fk_l
                 else:
                     q = fk_l % 16
-                key = settings.DOWNLOAD_KEY
+                key = settings.OPERA_KEY
                 if q != 0:
                     key += '0' * q
                 now = time.time()
@@ -170,12 +170,12 @@ def download():
         playload = base64.standard_b64decode(proof).decode()
 
         q = 0
-        fk_l = len(settings.DOWNLOAD_KEY)
+        fk_l = len(settings.OPERA_KEY)
         if fk_l < 16:
             q = 16 - fk_l
         else:
             q = fk_l % 16
-        key = settings.DOWNLOAD_KEY
+        key = settings.OPERA_KEY
         if q != 0:
             key += '0' * q
 
@@ -259,12 +259,12 @@ def get_video_first_photo():
             if os.path.exists(file_path):
                 # frws.REDIS_CLI.set(req_body, file_name, 60)
                 q = 0
-                fk_l = len(settings.DOWNLOAD_KEY)
+                fk_l = len(settings.OPERA_KEY)
                 if fk_l < 16:
                     q = 16 - fk_l
                 else:
                     q = fk_l % 16
-                key = settings.DOWNLOAD_KEY
+                key = settings.OPERA_KEY
                 if q != 0:
                     key += '0' * q
                 now = time.time()
@@ -280,12 +280,12 @@ def get_video_first_photo():
         playload = base64.standard_b64decode(proof).decode()
 
         q = 0
-        fk_l = len(settings.DOWNLOAD_KEY)
+        fk_l = len(settings.OPERA_KEY)
         if fk_l < 16:
             q = 16 - fk_l
         else:
             q = fk_l % 16
-        key = settings.DOWNLOAD_KEY
+        key = settings.OPERA_KEY
         if q != 0:
             key += '0' * q
 
@@ -315,7 +315,7 @@ def get_video_first_photo():
             file_path = save_dir + os.path.sep + file_name
             if os.path.exists(file_path):
                 return send_file(
-                    get_video_num_image(file_path, n=50),
+                    get_video_num_image(file_path, num=50),
                     mimetype='image/png'
                 )
 
