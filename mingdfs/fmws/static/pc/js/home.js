@@ -121,6 +121,53 @@ $(".popu_menu > .layout > .download").click(function () {
 });
 
 
+$(".popu_menu > .layout > .get_video_first_photo").click(function () {
+    var api_key = $(".api_key").html().trim();
+    var title = $(".yj_title").html().trim();
+    var category_id = $(".yj_category_id").html().trim();
+    var third_user_id = $(".yj_third_user_id").html().trim();
+    var file_extension = $(".yj_file_extension").html().trim();
+
+    var api_key = $(".api_key").html().trim();
+    var title = $(".yj_title").html().trim();
+    var category_id = $(".yj_category_id").html().trim();
+    var third_user_id = $(".yj_third_user_id").html().trim();
+    var file_extension = $(".yj_file_extension").html().trim();
+
+    $(".look_panel > .layout > .lp_header > .lp_title").html(title);
+
+    $.ajax({
+        type: 'GET',
+        url: "/file/get_video_first_photo",
+        data: {
+            'api_key': api_key,
+            'third_user_id': third_user_id,
+            'title': title,
+            'category_id': category_id,
+            'expire': 9000
+        },
+        cache: false,
+        contentType: "application/x-www-form-urlencoded",
+        dataType: "json",
+        success: function (data) {
+            console.log(data.status);
+
+            if (data.status == 1) {
+                var url = data.data[0]['url'];
+                window.open(url);
+            } else {
+                alert('获取失败');
+            }
+        },
+        error: function (err) {
+            alert('网络错误');
+        },
+        async: true,
+    });
+    $(".popu_menu").hide();
+});
+
+
 $(".popu_menu > .layout > .look").click(function () {
     $(".look_panel > .layout").css({
         position: "absolute",

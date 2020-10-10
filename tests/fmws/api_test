@@ -1,7 +1,0 @@
-from unittest import TestCase
-import requests
-
-
-class FileAPITest(TestCase):
-    def test_upload(self):
-        pass

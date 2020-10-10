@@ -341,6 +341,79 @@ def download_many():
     return {"data": jd['data'], "status": 1}
 
 
+@FILE_BP.route('/get_video_first_photo', methods=['GET'])
+def get_video_first_photo():
+    """获取（视频）文件的第一帧
+
+    GET 请求url参数 {"api_key": xxx, "third_user_id": xxx, "title": xxx, "category_id": xxx, "expire": xxx}
+        返回 成功 二进制数据
+            失败 json {"data": [], "status": 0}
+    """
+    if request.method == 'GET':
+        api_key = request.args['api_key']
+        third_user_id = request.args['third_user_id']
+        title = request.args['title']
+        category_id = request.args['category_id']
+        expire = request.args['expire']
+
+        user = User(MYSQL_POOL)
+        user_id = user.get_user_id_by_api_key(api_key)
+        if user_id is None:
+            return {"data": [], "status": 0}
+
+        file = File(MYSQL_POOL)
+        fhp = file.get_file_extension_host_name_port_ip(user_id, third_user_id, title, category_id)
+        if fhp is None:
+            return {"data": [], "status": 0}
+        file_extension = fhp['file_extension']
+        host_name = fhp['host_name']
+        port = fhp['port']
+        ip = fhp['ip']
+
+        u = settings.FRWS_API_TEMPLATE['get_video_first_photo']
+        method = u['method']
+        url = u['url'] % (host_name, port)
+        params = {
+            "user_id": user_id,
+            "third_user_id": third_user_id,
+            "title": title,
+            "category_id": category_id,
+            "file_extension": file_extension,
+            "timestamp": crypt_number(time.time()),
+            'expire': expire
+        }
+
+        q = 0
+        fk_l = len(settings.FMWS_KEY)
+        if fk_l < 16:
+            q = 16 - fk_l
+        else:
+            q = fk_l % 16
+        key = settings.FMWS_KEY
+        if q != 0:
+            key += '0' * q
+        playload = encrypt(key, json.dumps(params)).decode()
+        r = requests.request(method, url, data=playload, verify=False)
+        r.raise_for_status()
+
+        # XXX: 这条sql可以考虑用file_id去优化
+        if file.edit_last_access_time(user_id, third_user_id, title, category_id, int(time.time())) is False:
+            print('修改last_access_time失败', request.args)
+
+        jd = r.json()
+        if jd['status'] != 0:
+            url = 'https://%s:%d/file/get_video_first_photo?proof=%s' % (
+                ip,
+                port,
+                jd['data'][0]['proof']
+            )
+            logging.debug('get_video_first_photo_url: %s', url)
+
+            return {"data": [{'url': url}], 'status': 1}
+        else:
+            return {"data": [], "status": 0}
+
+
 def _get_one_video_first_photo(ele, file, u, user_id, key, method):
     try:
         third_user_id = ele['third_user_id']
@@ -378,12 +451,12 @@ def _get_one_video_first_photo(ele, file, u, user_id, key, method):
 
         jd = r.json()
         if jd['status'] != 0:
-            url = 'https://%s:%d/file/download?proof=%s' % (
+            url = 'https://%s:%d/file/get_video_first_photo?proof=%s' % (
                 ip,
                 port,
                 jd['data'][0]['proof']
             )
-            logging.debug('download_url: %s', url)
+            logging.debug('get_video_first_photo_url: %s', url)
             ele['url'] = url
         else:
             ele['url'] = ''
