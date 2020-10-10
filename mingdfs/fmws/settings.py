@@ -64,6 +64,10 @@ FRWS_API_TEMPLATE = {
     'delete_rollback': {
         'method': 'get',
         'url': 'https://%s:%d/file/delete_rollback'
+    },
+    'get_video_first_photo': {
+        'method': 'post',
+        'url': 'https://%s:%d/file/get_video_first_photo'
     }
 }
 

@@ -341,6 +341,113 @@ def download_many():
     return {"data": jd['data'], "status": 1}
 
 
+def _get_one_video_first_photo(ele, file, u, user_id, key, method):
+    try:
+        third_user_id = ele['third_user_id']
+        title = ele['title']
+        category_id = ele['category_id']
+        expire = ele['expire']
+
+        fhp = file.get_file_extension_host_name_port_ip(user_id, third_user_id, title, category_id)
+        if fhp is None:
+            return {"data": [], "status": 0}
+        file_extension = fhp['file_extension']
+        host_name = fhp['host_name']
+        port = fhp['port']
+        ip = fhp['ip']
+
+        url = u['url'] % (host_name, port)
+
+        params = {
+            "user_id": user_id,
+            "third_user_id": third_user_id,
+            "title": title,
+            "category_id": category_id,
+            "file_extension": file_extension,
+            'timestamp': crypt_number(time.time()),
+            'expire': expire
+        }
+
+        playload = encrypt(key, json.dumps(params)).decode()
+        r = requests.request(method, url, data=playload, verify=False)
+        r.raise_for_status()
+
+        # XXX: 这条sql可以考虑用file_id去优化
+        if file.edit_last_access_time(user_id, third_user_id, title, category_id, int(time.time())) is False:
+            print('修改last_access_time失败', request.args)
+
+        jd = r.json()
+        if jd['status'] != 0:
+            url = 'https://%s:%d/file/download?proof=%s' % (
+                ip,
+                port,
+                jd['data'][0]['proof']
+            )
+            logging.debug('download_url: %s', url)
+            ele['url'] = url
+        else:
+            ele['url'] = ''
+    except:
+        logging.debug('获取first_photo_url失败', ele)
+        ele['url'] = ''
+
+
+@FILE_BP.route('/get_many_video_first_photo', methods=['GET'])
+def get_many_video_first_photo():
+    """获取多个文件（视频）的第一帧图片
+
+    GET 请求form表单 {"api_key": xxx, "data": [{"third_user_id": xxx, "title": xxx, "category_id": xxx, "expire": xxx}]}
+    返回 成功 {"data": [
+                    {
+                        "third_user_id": xxx,
+                        "title": xxx,
+                        "category_id": xxx,
+                        "url": xxx
+                    },
+                    ]
+                    "status": 1
+                  }
+            失败 json {"data": [], "status": 0}
+    """
+    if request.method == 'GET':
+        jd = json.loads(request.get_data())
+
+        api_key = jd['api_key']
+        user = User(MYSQL_POOL)
+        user_id = user.get_user_id_by_api_key(api_key)
+        if user_id is None:
+            return {"data": [], "status": 0}
+
+        q = 0
+        fk_l = len(settings.FMWS_KEY)
+        if fk_l < 16:
+            q = 16 - fk_l
+        else:
+            q = fk_l % 16
+        key = settings.FMWS_KEY
+        if q != 0:
+            key += '0' * q
+
+        file = File(MYSQL_POOL)
+
+        u = settings.FRWS_API_TEMPLATE['get_video_first_photo']
+        method = u['method']
+
+        if len(jd['data']) > 10:
+            return {"data": [], "status": 0}
+
+        tasks = []
+        for ele in jd['data']:
+            task = Thread(target=_download_one, args=(ele, file, u, user_id, key, method))
+            tasks.append(task)
+            task.start()
+
+        for task in tasks:
+            task.join()
+
+    return {"data": jd['data'], "status": 1}
+
+
 @FILE_BP.route('/delete', methods=['POST'])
 def delete():
     """删除文件

@@ -6,12 +6,12 @@ import time
 import traceback
 
 import psutil
-from flask import request, Blueprint, send_from_directory
+from flask import request, Blueprint, send_from_directory, send_file
 
 from mingdfs import frws
 from mingdfs.frws import APP
 from mingdfs.frws import settings
-from mingdfs.utils import decrypt, decrypt_number, encrypt, crypt_number
+from mingdfs.utils import decrypt, decrypt_number, encrypt, crypt_number, get_video_num_image
 
 FILE_BP = Blueprint('file_bp', __name__)
 
@@ -207,6 +207,120 @@ def download():
                 return send_from_directory(save_dir, file_name, attachment_filename=file_name)
 
         raise
+
+
+@FILE_BP.route('/get_video_first_photo', methods=['GET', 'POST'])
+def get_video_first_photo():
+    """获取视频文件的第一帧
+
+    POST 请求经过加密过的payload {"user_id": xxx, "third_user_id": xxx,
+                               "title": xxx, "category_id": xxx,
+                               "file_extension": xxx, "timestamp": xxx,
+                               "expire": xxx}
+        返回 成功 json {"data": [{"proof": xxx}], "status": 1}
+            失败 json {"data": [], "status": 0}
+
+    GET 请求url参数 { "payload": xxx}
+        成功 返回 二进制数据
+        失败 返回 json {"data": [], "status": 0}
+    """
+    if request.method == 'POST':
+        req_body = request.get_data().decode()
+
+        q = 0
+        fk_l = len(settings.FMWS_KEY)
+        if fk_l < 16:
+            q = 16 - fk_l
+        else:
+            q = fk_l % 16
+        key = settings.FMWS_KEY
+        if q != 0:
+            key += '0' * q
+        form_data = json.loads(decrypt(key, req_body))
+
+        user_id = form_data.get('user_id')
+        third_user_id = form_data.get("third_user_id")
+        title = form_data.get('title')
+        category_id = form_data.get("category_id")
+        file_extension = form_data.get('file_extension')
+        timestamp = form_data.get('timestamp')
+        # TODO
+        expire = float(form_data.get('expire'))
+
+        file_name = str(user_id) + '_' + str(third_user_id) + '_' + title + \
+                    '_' + str(category_id)
+        file_name = base64.standard_b64encode(file_name.encode()).decode()
+        file_name = base64.standard_b64encode(file_name.encode()).decode()
+        if file_extension != '':
+            file_name = file_name + "." + file_extension
+
+        for save_dir in settings.SAVE_DIRS:
+            file_path = save_dir + os.path.sep + file_name
+            if os.path.exists(file_path):
+                # frws.REDIS_CLI.set(req_body, file_name, 60)
+                q = 0
+                fk_l = len(settings.DOWNLOAD_KEY)
+                if fk_l < 16:
+                    q = 16 - fk_l
+                else:
+                    q = fk_l % 16
+                key = settings.DOWNLOAD_KEY
+                if q != 0:
+                    key += '0' * q
+                now = time.time()
+                form_data['expire'] = crypt_number(now + expire)
+                form_data['timestamp'] = crypt_number(now)
+                payload = encrypt(key, json.dumps(form_data))
+                proof = base64.standard_b64encode(payload).decode()
+
+                return {"data": [{'proof': proof}], "status": 1}
+        return {"data": [], "status": 0}
+    elif request.method == 'GET':
+        proof = request.args.get('proof').encode()
+        playload = base64.standard_b64decode(proof).decode()
+
+        q = 0
+        fk_l = len(settings.DOWNLOAD_KEY)
+        if fk_l < 16:
+            q = 16 - fk_l
+        else:
+            q = fk_l % 16
+        key = settings.DOWNLOAD_KEY
+        if q != 0:
+            key += '0' * q
+
+        form_data = json.loads(decrypt(key, playload.encode()))
+
+        user_id = form_data.get('user_id')
+        third_user_id = form_data.get("third_user_id")
+        title = form_data.get('title')
+        category_id = form_data.get("category_id")
+        file_extension = form_data.get('file_extension')
+        file_name = str(user_id) + '_' + str(third_user_id) + '_' + title + \
+                    '_' + str(category_id)
+        file_name = base64.standard_b64encode(file_name.encode()).decode()
+        file_name = base64.standard_b64encode(file_name.encode()).decode()
+        expire = decrypt_number(form_data.get('expire'))
+
+        if file_extension != '':
+            file_name = file_name + "." + file_extension
+
+        # if frws.REDIS_CLI.get(playload) != file_name.encode():
+        #     return {"data": [], "status": 0}
+        now = time.time()
+        if expire - now <= 0:
+            return {"data": [], "status": 0}
+
+        for save_dir in settings.SAVE_DIRS:
+            file_path = save_dir + os.path.sep + file_name
+            if os.path.exists(file_path):
+                return send_file(
+                    get_video_num_image(file_path, n=50),
+                    mimetype='image/png'
+                )
+
+        raise
+
 
 @FILE_BP.route('/edit', methods=['POST'])
 def edit():

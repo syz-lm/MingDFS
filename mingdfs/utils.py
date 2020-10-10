@@ -3,6 +3,10 @@ import os
 import platform
 import shutil
 from binascii import b2a_hex, a2b_hex
+import cv2
+from io import BytesIO
+import traceback
+from PIL import Image
 
 from Crypto.Cipher import AES
 
@@ -184,6 +188,38 @@ def decrypt(key, text):
     cryptos = AES.new(key, mode, iv)
     plain_text = cryptos.decrypt(a2b_hex(text))
     return bytes.decode(plain_text).rstrip('\0')
+
+
+def get_video_num_image(file_name, num=1):
+    """获取视频的第n帧图片
+
+    :param file_name: 视屏文件名
+    :type file_name: str
+    :param num: 获取第几帧的视屏图片
+    :type num: int
+
+    """
+    try:
+        vidcap = cv2.VideoCapture(file_name)
+        success, img_cv2 = vidcap.read()
+        n = 1
+        while n < num:
+            success, img_cv2 = vidcap.read()
+            n += 1
+
+        img = Image.fromarray(img_cv2)
+        # img.save('/root/test.png')
+
+        bts = BytesIO()
+        img.save(bts, format='png')
+
+        return BytesIO(bts.getvalue())
+    except:
+        logging.error(traceback.format_exc())
+        return None
+    finally:
+        if vidcap: vidcap.release()
+        if bts: bts.close()
 
 
 if __name__ == '__main__':
