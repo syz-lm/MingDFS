@@ -511,7 +511,7 @@ def get_many_video_first_photo():
 
         tasks = []
         for ele in jd['data']:
-            task = Thread(target=_download_one, args=(ele, file, u, user_id, key, method))
+            task = Thread(target=_get_one_video_first_photo, args=(ele, file, u, user_id, key, method))
             tasks.append(task)
             task.start()
 
