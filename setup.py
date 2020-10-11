@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='mingdfs',
-    version='1.0.1',
+    version='1.0.2',
     url='',
     license='',
     maintainer='zswj123',
