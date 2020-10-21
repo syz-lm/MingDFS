@@ -71,10 +71,11 @@ FRWS_API_TEMPLATE = {
     }
 }
 
-CACHE_FRWS_STAT_INFOR_KEY = 'frws_stat_infor'
-CACHE_FRWS_COMPUTERS_KEY = 'frws_computers'
-CACHE_STAT_INTERVAL_KEY = 'stat_interval'
+CACHE_FRWS_STAT_INFOR_KEY = 'mingdfs_frws_stat_infor'
+CACHE_FRWS_COMPUTERS_KEY = 'mingdfs_frws_computers'
+CACHE_STAT_INTERVAL_KEY = 'mingdfs_stat_interval'
 
+# 仅在统计信息中使用的一个索引
 CACHE_STAT_BEST_FRWS_KEY = 'best_frws'
 
 SSL_KEYFILE = os.path.split(os.path.realpath(__file__))[0] + os.sep + "server.key"

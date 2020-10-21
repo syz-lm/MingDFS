@@ -61,7 +61,7 @@ def _sort_stat(stats: list):
     if len(sorted_list) != 0:
         max_disk_free = max(sorted_list)
         return {
-            "best_frws": tmp_dict[max_disk_free],
+            settings.CACHE_STAT_BEST_FRWS_KEY: tmp_dict[max_disk_free],
             "all_frws": stats
         }
     else:
