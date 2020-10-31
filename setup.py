@@ -22,7 +22,8 @@ setup(
         "psutil",
         "requests",
         "pycrypto",
-        "requests-toolbelt"
+        "requests-toolbelt",
+        "opencv-python"
     ],
     entry_points = """
     [console_scripts]
