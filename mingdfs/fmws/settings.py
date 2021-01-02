@@ -24,7 +24,7 @@ MAIL_CONFIG = {
 REDIS_CONFIG = {
     "host": 'serv_pro',
     "port": 6379,
-    "db": 1,
+    "db": 0,
     "passwd": 'mm5201314'
 }
 
