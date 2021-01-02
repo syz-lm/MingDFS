@@ -55,6 +55,7 @@ def init_app():
         SESSION_TYPE="redis",
         SESSION_REDIS=REDIS_CLI,
         SESSION_KEY_PREFIX="SESSION:",
+        SESSION_USE_SIGNER=True,
         # session超时时间
         PERMANENT_SESSION_LIFETIME=timedelta(seconds=60 * 60),
         # MAX_CONTENT_LENGTH=16 * 1024 * 1024

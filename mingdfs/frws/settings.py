@@ -20,11 +20,9 @@ FRWS_KEY = 'mm5201314'
 REDIS_CONFIG = {
     "host": 'serv_pro',
     "port": 6379,
-    "db": 2,
+    "db": 0,
     "passwd": 'mm5201314'
 }
-
-SECRET_KEY = 'mm5203344'
 
 SSL_KEYFILE = os.path.split(os.path.realpath(__file__))[0] + os.sep + "server.key"
 SSL_CERTFILE = os.path.split(os.path.realpath(__file__))[0] + os.sep + "server.crt"
