@@ -24,7 +24,7 @@ REDIS_CONFIG = {
     "passwd": 'mm5201314'
 }
 
-SECRET_KEY = 'mm5201314'
+SECRET_KEY = 'mm5203344'
 
 SSL_KEYFILE = os.path.split(os.path.realpath(__file__))[0] + os.sep + "server.key"
 SSL_CERTFILE = os.path.split(os.path.realpath(__file__))[0] + os.sep + "server.crt"
