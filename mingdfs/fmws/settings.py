@@ -1,7 +1,7 @@
 import os
 
 # session 盐值
-SECRET_KEY = 'mm5203344'
+SECRET_KEY = 'mm5201314'
 
 MYSQL_CONFIG = {
     "host": 'serv_pro',
@@ -24,7 +24,7 @@ MAIL_CONFIG = {
 REDIS_CONFIG = {
     "host": 'serv_pro',
     "port": 6379,
-    "db": 0,
+    "db": 1,
     "passwd": 'mm5201314'
 }
 
