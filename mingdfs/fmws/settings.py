@@ -1,7 +1,7 @@
 import os
 
 # session 盐值
-SECRET_KEY = 'mm5201314'
+SECRET_KEY = 'mm5203344'
 
 MYSQL_CONFIG = {
     "host": 'serv_pro',
