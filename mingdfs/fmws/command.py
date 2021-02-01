@@ -5,7 +5,6 @@ import argparse
 import logging
 import json
 import os
-from mingdfs.fmws.stat_process import start_stat
 
 
 def main(log_level=logging.DEBUG, debug=False):
@@ -95,6 +94,8 @@ def _read_command_line(flags, debug):
             apps.MYSQL_POOL.release()
             apps.REDIS_CLI.close()
     else:
+        from mingdfs.fmws.stat_process import start_stat
+
         start_stat(flags.STAT_INTERVAL)
 
 

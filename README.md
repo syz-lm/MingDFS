@@ -68,5 +68,26 @@ optional arguments:
                         输入进程类型：0: frws, 1: register_frws
 
 ```
+## 命令行参数例子
 
-文件资源服务器的配置和启动。
+* frws
+```
+frws --IP 192.168.101.4 --PORT 15676 --HOST_NAME frws0 --PROCESS_TYPE 0 --FMWS_IP 192.168.101.4 --FMWS_PORT 15675 --FMWS_HOST_NAME fmws0 --SAVE_DIRS E:\mingdfs\frws --BACKUP_DIR E:\mingdfs\frws_backup --REDIS_CONFIG {\"host\":\"192.168.101.4\",\"port\":6379,\"db\":0,\"passwd\":\"mm5201314\"}
+```
+
+* frws_register_process
+```
+fmws_register_process --IP 192.168.101.4 --PORT 15676 --HOST_NAME frws0 --PROCESS_TYPE 1 --FMWS_IP 192.168.101.4 --FMWS_PORT 15675 --FMWS_HOST_NAME fmws0 --SAVE_DIRS E:\mingdfs\frws --BACKUP_DIR E:\mingdfs\frws_backup --REDIS_CONFIG {\"host\":\"192.168.101.4\",\"port\":6379,\"db\":0,\"passwd\":\"mm5201314\"}
+```
+
+* fmws
+```
+fmws --MYSQL_CONFIG {\"host\":\"192.168.101.4\",\"user\":\"root\",\"passwd\":\"mm5201314\",\"db\":\"mingdfs\",\"size\":5} --REDIS_CONFIG {\"host\":\"192.168.101.4\",\"port\":6379,\"db\":0,\"passwd\":\"mm5201314\"} --HOST_NAME fmws0 --HOST 0.0.0.0 --PORT 15675 --FMWS_CACHE E:\mingdfs\fmws_cache --PROCESS_TYPE 0
+```
+
+* fmws_stat_process
+```
+fmws_stat_process --MYSQL_CONFIG {\"host\":\"192.168.101.4\",\"user\":\"root\",\"passwd\":\"mm5201314\",\"db\":\"mingdfs\",\"size\":5} --REDIS_CONFIG {\"host\":\"192.168.101.4\",\"port\":6379,\"db\":0,\"passwd\":\"mm5201314\"} --HOST_NAME fmws0 --HOST 0.0.0.0 --PORT 15675 --FMWS_CACHE E:\mingdfs\fmws_cache --PROCESS_TYPE 1
+```
+
+**XX: Windows下json输入参数，双引号必须转义，且不能有空格**

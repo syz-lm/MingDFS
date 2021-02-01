@@ -23,7 +23,8 @@ setup(
         "requests",
         "pycryptodome",
         "requests-toolbelt",
-        "opencv-python"
+        "opencv-python",
+        "cryptography"
     ],
     entry_points={
         'console_scripts': [
