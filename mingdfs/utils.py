@@ -1,5 +1,4 @@
 import logging
-import os
 import platform
 import shutil
 from binascii import b2a_hex, a2b_hex
@@ -7,7 +6,6 @@ import cv2
 from io import BytesIO
 import traceback
 from PIL import Image
-
 from Crypto.Cipher import AES
 
 PC = 1
@@ -33,27 +31,34 @@ def pc_or_mobile(user_agent: str) -> bool:
 
 def load_hosts():
     ih = {}
-    if 'Linux' in platform.platform():
+    plt = platform.platform()
+    hosts = None
+
+    if 'Linux' in plt:
         hosts = '/etc/hosts'
-        with open(hosts, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                line = line.strip()
-                logging.debug(line)
-                if len(line) != 0:
-                    tmp = line.split(' ')
-                    ip = tmp[0]
-                    if ip != '#':
-                        if len(tmp) == 1:
-                            continue
-                        host_names = tmp[1:]
-                        host_names[len(host_names) - 1] = host_names[len(host_names) - 1].replace('\n', '')
+    elif 'Windows' in plt:
+        hosts = 'C:\Windows\System32\drivers\etc\hosts'
 
-                        if ip in ih:
-                            ih[ip] = set(list(ih[ip]) + [host_name for host_name in host_names if len(host_name) != 0])
-                        else:
-                            ih[ip] = set([host_name for host_name in host_names if len(host_name) != 0])
+    if hosts is None:
+        raise
+    with open(hosts, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            line = line.strip()
+            logging.debug(line)
+            if len(line) != 0:
+                tmp = line.split(' ')
+                ip = tmp[0]
+                if not ip.startswith('#'):
+                    if len(tmp) == 1:
+                        continue
+                    host_names = tmp[1:]
+                    host_names[len(host_names) - 1] = host_names[len(host_names) - 1].replace('\n', '')
 
+                    if ip in ih:
+                        ih[ip] = set(list(ih[ip]) + [host_name for host_name in host_names if len(host_name) != 0])
+                    else:
+                        ih[ip] = set([host_name for host_name in host_names if len(host_name) != 0])
 
     return ih
 
@@ -92,11 +97,19 @@ def dump_hosts(ih: dict):
 
     logging.debug(content)
 
-    if content != '' and 'Linux' in platform.platform():
+    plt = platform.platform()
+    hosts = None
+
+    if 'Linux' in plt:
         hosts = '/etc/hosts'
+    elif 'Windows' in plt:
+        hosts = 'C:\Windows\System32\drivers\etc\hosts'
+
+    if hosts is None:
+        raise
+
+    if content != '':
         bak = hosts + '.bak'
-        if not os.path.exists(bak):
-            os.mknod(bak)
         shutil.copyfile(hosts, bak)
 
         with open(hosts, 'w') as f:
@@ -223,12 +236,12 @@ def get_video_num_image(file_name, num=1):
 
 
 if __name__ == '__main__':
-    # key = '1234567890123456'
-    # msg = encrypt(key, 'hello')
-    # print('msg:', msg)
-    # my = decrypt(key, msg)
-    # print('my:', msg)
-
-    en = crypt_number(123.4)
-    print(en)
-    print(decrypt_number(en))
+    key = '1234567890123456'
+    msg = encrypt(key, 'hello')
+    print('msg:', msg)
+    my = decrypt(key, msg)
+    print('my:', msg)
+    #
+    # en = crypt_number(123.4)
+    # print(en)
+    # print(decrypt_number(en))

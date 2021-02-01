@@ -21,13 +21,14 @@ setup(
         "gevent",
         "psutil",
         "requests",
-        "pycrypto",
+        "pycryptodome",
         "requests-toolbelt",
         "opencv-python"
     ],
-    entry_points = """
-    [console_scripts]
-    fmws = mingdfs.fmws.command:main
-    frws = mingdfs.frws.command:main
-    """
+    entry_points={
+        'console_scripts': [
+            'fmws = mingdfs.fmws.command:main',
+            'frws = mingdfs.frws.command:main'
+        ]
+    }
 )
