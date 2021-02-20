@@ -2,7 +2,7 @@
 
 一个Python编写的分布式文件系统。
 
-![](http://serv_pro:3000/kael/MingDFS/raw/master/logo.gif)
+![](https://raw.githubusercontent.com/kfxce/MingDFS/master/logo.gif)
 
 ## FMWS
 
