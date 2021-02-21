@@ -54,9 +54,12 @@ body {
     width: -moz-fit-content;
 }
 
-.go {
+.go, .pre, .next {
     color: blue;
     border: solid 1px blue;
+}
+
+.next {
     margin-right: 10px;
 }
 

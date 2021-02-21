@@ -200,7 +200,7 @@ class File(MySQLBase):
         results = self.mysql_pool.query(sql, args)
         if results is not None and len(results) != 0:
             count = results[0]['count']
-            return math.ceil(count / 25)
+            return math.ceil(count / 10)
         else:
             return None
 
@@ -228,9 +228,9 @@ class File(MySQLBase):
                 where
                     user_id = %s 
                 order by last_access_time desc, id desc 
-                limit %s, 25
+                limit %s, 10
                 """)
-        args = (user_id, (page - 1) * 25)
+        args = (user_id, (page - 1) * 10)
 
         results = self.mysql_pool.query(sql, args)
         if results != None and len(results) != 0:

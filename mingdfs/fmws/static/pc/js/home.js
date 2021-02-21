@@ -635,12 +635,37 @@ function get_total_pages() {
 $(".go").click(function () {
     var total_pags = parseInt($(".total_pages").html());
     var go = parseInt($(".page").val());
-    if (total_pags < go) {
-        alert("跳转页大于总页数");
+    if (total_pags < go || go < 1) {
+        alert("跳转页数有误");
         return;
     }
 
     $(".current_page").html(go);
-
     page_files(go);
+});
+
+$(".pre").click(function () {
+    var total_pags = parseInt($(".total_pages").html());
+    var current_page = parseInt($(".current_page").html());
+    if (total_pags < current_page - 1 || current_page - 1 < 1) {
+        alert("跳转页数有误");
+        return;
+    }
+
+    $(".page").val(current_page - 1);
+    $(".current_page").html(current_page - 1);
+    page_files(current_page - 1);
+});
+
+$(".next").click(function () {
+    var total_pags = parseInt($(".total_pages").html());
+    var current_page = parseInt($(".current_page").html());
+    if (total_pags < current_page + 1) {
+        alert("跳转页数有误");
+        return;
+    }
+
+    $(".page").val(current_page + 1);
+    $(".current_page").html(current_page + 1);
+    page_files(current_page + 1);
 });
