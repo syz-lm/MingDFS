@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>MingDFS分布式文件系统</title>
+    <link rel="shortcut icon" href={{ url_for("static", filename="favicon.ico") }}>
+    <link href={{url_for("static", filename="pc/css/not_login_home.css")}} rel="stylesheet"/>
+    <script src={{url_for("static", filename="jquery-3.4.1.min.js")}}></script>
+</head>
+
+<body>
+    <div class="header">
+        <span class="title">欢迎
+            <user>
+            {% if user_name %}
+                {{user_name}}
+            {% else %}
+                您
+            {% endif %}
+            </user>使用MingDFS分布式文件系统。
+        </span>
+        <a href="/user/login" class="login">登录</a>
+    </div>
+    <div class="content">
+        以下是系统截图
+        <img src={{url_for("static", filename="logo.gif")}}>
+
+        不用下载，网站上注册账号，就可以轻松的管理您的文件，一款非常简单的网络文件系统。
+    </div>
+
+    <div class="footer">
+        设为首页© kfxce 使用kfxce前必读 意见反馈 京ICP证[正在申请中]号<br>
+            京公网安备[正在申请中]号
+    </div>
+    <script src={{url_for("static", filename="pc/js/home.js")}}></script>
+</body>
+</html>

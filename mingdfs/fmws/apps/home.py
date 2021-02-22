@@ -13,19 +13,19 @@ HOME_BP = Blueprint('home_bp', __name__)
 def home():
     user_id = session.get(IS_LOGIN, None)
     if user_id is None:
-        return redirect(url_for('user_bp.login'))
+        return render_template('pc/not_login_home.html')
 
     user = User(apps.MYSQL_POOL)
     user_name = user.get_user_name_by_user_id(user_id)
     if user_name is None:
         print('user_id存在，但user_name为none', user_id)
         session.pop(IS_LOGIN) # XXX: 这究竟是flask的bug还是flask团队留下的后门？
-        return redirect(url_for('user_bp.login'))
+        return render_template('pc/not_login_home.html')
 
     api_key = user.get_api_key_by_user_id(user_id)
     if api_key is None:
         print('user_id存在，但api_key为none', api_key)
-        return redirect(url_for('user_bp.login'))
+        return render_template('pc/not_login_home.html')
 
     context = {
         'user_name': user_name,

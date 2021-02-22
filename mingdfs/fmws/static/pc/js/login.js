@@ -19,7 +19,7 @@ $(".submit").click(function () {
         dataType: "json",
         success: function (data) {
             if (data.status == 1) {
-                alert("登录成功");
+                // alert("登录成功");
                 location.href = '/home';
             } else {
                 alert("登录失败");

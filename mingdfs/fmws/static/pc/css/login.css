@@ -66,3 +66,14 @@ bz {
     background-color: peachpuff;
     float: right;
 }
+
+.footer {
+    width: 1080px;
+    color: white;
+    text-align: center;
+    font: 12px/1.5 Arial;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
