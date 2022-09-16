@@ -240,7 +240,7 @@ if __name__ == '__main__':
     msg = encrypt(key, 'hello')
     print('msg:', msg)
     my = decrypt(key, msg)
-    print('my:', msg)
+    print('my:', my)
     #
     # en = crypt_number(123.4)
     # print(en)
